@@ -27,6 +27,17 @@ If you'd prefer to manually register the custom element, you can use the query s
   ActorTypeahead.define("some-other-tag");
 </script>
 
+If you're using a bundler, you can install it from npm:
+
+```sh
+npm install actor-typeahead
+```
+
+Then import it somewhere in your JavaScript. It'll auto-register itself.
+
+```js
+import "actor-typeahead";
+```
 
 ## Usage
 
