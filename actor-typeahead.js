@@ -98,6 +98,14 @@ user.innerHTML = `
   </li>
 `;
 
+/**
+ * @template {HTMLElement} T
+ * @param {T} tmpl
+ */
+function clone(tmpl) {
+  return /** @type {T} */ (tmpl.cloneNode(true));
+}
+
 export default class ActorTypeahead extends HTMLElement {
   static tag = "actor-typeahead";
 
@@ -128,7 +136,7 @@ export default class ActorTypeahead extends HTMLElement {
   constructor() {
     super();
 
-    this.#shadow.append(template.cloneNode(true).content);
+    this.#shadow.append(clone(template).content);
     this.#render();
     this.addEventListener("input", this);
     this.addEventListener("focusout", this);
@@ -149,7 +157,7 @@ export default class ActorTypeahead extends HTMLElement {
   handleEvent(evt) {
     switch (evt.type) {
       case "input":
-        this.#oninput(/** @type {InputEvent} */ (evt));
+        this.#oninput(/** @type {InputEvent & { target: HTMLInputElement }} */ (evt));
         break;
 
       case "keydown":
@@ -161,11 +169,11 @@ export default class ActorTypeahead extends HTMLElement {
         break;
 
       case "pointerdown":
-        this.#onpointerdown(/** @type {PointerEvent} */ (evt));
+        this.#onpointerdown(/** @type {PointerEvent & { target: HTMLElement }} */ (evt));
         break;
 
       case "pointerup":
-        this.#onpointerup(/** @type {PointerEvent} */ (evt));
+        this.#onpointerup(/** @type {PointerEvent & { target: HTMLElement }} */ (evt));
         break;
     }
   }
@@ -206,12 +214,12 @@ export default class ActorTypeahead extends HTMLElement {
 
       case "Enter":
         evt.preventDefault();
-        this.#shadow.querySelectorAll(".user")[this.#index]?.click();
+        this.#shadow.querySelectorAll("button")[this.#index]?.click();
         break;
     }
   }
 
-  /** @param {InputEvent} evt */
+  /** @param {InputEvent & { target: HTMLInputElement }} evt */
   async #oninput(evt) {
     const query = evt.target?.value;
     if (!query) {
@@ -245,16 +253,19 @@ export default class ActorTypeahead extends HTMLElement {
     const fragment = document.createDocumentFragment();
     let i = -1;
     for (const actor of this.#actors) {
-      const li = user.cloneNode(true).content;
+      const li = clone(user).content;
 
-      const button = li.querySelector(".user");
-      button.dataset.handle = actor.handle;
-      if (++i === this.#index) button.dataset.active = "true";
+      const button = li.querySelector("button");
+      if (button) {
+        button.dataset.handle = actor.handle;
+        if (++i === this.#index) button.dataset.active = "true";
+      }
 
-      const avatar = li.querySelector(".img");
-      if (actor.avatar) avatar.src = actor.avatar;
+      const avatar = li.querySelector("img");
+      if (avatar && actor.avatar) avatar.src = actor.avatar;
 
-      li.querySelector(".handle").textContent = actor.handle;
+      const handle = li.querySelector(".handle");
+      if (handle) handle.textContent = actor.handle;
 
       fragment.append(li);
     }
@@ -267,17 +278,17 @@ export default class ActorTypeahead extends HTMLElement {
     this.#pressed = true;
   }
 
-  /** @param {PointerEvent} evt */
+  /** @param {PointerEvent & { target: HTMLElement }} evt */
   #onpointerup(evt) {
     this.#pressed = false;
 
     this.querySelector("input")?.focus();
 
-    const button = evt.target?.closest(".user");
+    const button = evt.target?.closest("button");
     const input = this.querySelector("input");
     if (!input || !button) return;
 
-    input.value = button.dataset.handle;
+    input.value = button.dataset.handle || "";
     this.#actors = [];
     this.#render();
   }
