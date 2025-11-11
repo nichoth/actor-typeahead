@@ -107,14 +107,14 @@ export default class ActorTypeahead extends HTMLElement {
     if (name && name !== tag) return console.warn(`${this.name} already defined as <${name}>!`);
 
     const ce = customElements.get(tag);
-    if (Boolean(ce) && ce !== this) return console.warn(`<${tag}> already defined as ${ce.name}!`);
+    if (ce && ce !== this) return console.warn(`<${tag}> already defined as ${ce.name}!`);
 
     customElements.define(tag, this);
   }
 
   static {
-    const tag = new URL(import.meta.url).searchParams.get("define") || this.tag;
-    if (tag !== "false") this.define(tag);
+    const tag = new URL(import.meta.url).searchParams.get("tag") || this.tag;
+    if (tag !== "none") this.define(tag);
   }
 
   #shadow = this.attachShadow({ mode: "closed" });
@@ -138,7 +138,7 @@ export default class ActorTypeahead extends HTMLElement {
   }
 
   get #rows() {
-    const rows = Number.parseInt(this.getAttribute("rows"));
+    const rows = Number.parseInt(this.getAttribute("rows") ?? "");
 
     if (Number.isNaN(rows)) return 5;
     return rows;
@@ -164,11 +164,11 @@ export default class ActorTypeahead extends HTMLElement {
         break;
 
       case "pointerdown":
-        this.#onpointerdown(evt);
+        this.#onpointerdown(/** @type {PointerEvent} */ (evt));
         break;
 
       case "pointerup":
-        this.#onpointerup(evt);
+        this.#onpointerup(/** @type {PointerEvent} */ (evt));
         break;
     }
   }
@@ -183,7 +183,7 @@ export default class ActorTypeahead extends HTMLElement {
         break;
 
       case "PageDown":
-        event.preventDefault();
+        evt.preventDefault();
         this.#index = this.#rows - 1;
         this.#render();
         break;
@@ -195,7 +195,7 @@ export default class ActorTypeahead extends HTMLElement {
         break;
 
       case "PageUp":
-        event.preventDefault();
+        evt.preventDefault();
         this.#index = 0;
         this.#render();
         break;
@@ -216,7 +216,7 @@ export default class ActorTypeahead extends HTMLElement {
 
   /** @param {PointerEvent} evt */
   #onclick(evt) {
-    const button = evt.target.closest(".user");
+    const button = evt.target?.closest(".user");
     const input = this.querySelector("input");
     if (!input || !button) return;
 
@@ -227,7 +227,7 @@ export default class ActorTypeahead extends HTMLElement {
 
   /** @param {InputEvent} evt */
   async #oninput(evt) {
-    const query = evt.target.value;
+    const query = evt.target?.value;
     if (!query) {
       this.#actors = [];
       this.#render();
@@ -237,7 +237,7 @@ export default class ActorTypeahead extends HTMLElement {
     const host = this.getAttribute("host") ?? "https://public.api.bsky.app";
     const url = new URL("xrpc/app.bsky.actor.searchActorsTypeahead", host);
     url.searchParams.set("q", query);
-    url.searchParams.set("limit", this.getAttribute("rows") ?? 5);
+    url.searchParams.set("limit", `${this.#rows}`);
 
     const res = await fetch(url);
     const json = await res.json();
@@ -273,12 +273,13 @@ export default class ActorTypeahead extends HTMLElement {
       fragment.append(li);
     }
 
-    this.#shadow.querySelector(".menu").replaceChildren(...fragment.children);
+    this.#shadow.querySelector(".menu")?.replaceChildren(...fragment.children);
   }
 
   /** @param {PointerEvent} evt */
   #onpointerdown(evt) {
     const menu = this.#shadow.querySelector(".menu");
+    if (!menu) return;
 
     if (!menu.contains(evt.target)) return;
     menu.setPointerCapture(evt.pointerId);
@@ -288,6 +289,7 @@ export default class ActorTypeahead extends HTMLElement {
   /** @param {PointerEvent} evt */
   #onpointerup(evt) {
     const menu = this.#shadow.querySelector(".menu");
+    if (!menu) return;
 
     if (!menu.hasPointerCapture(evt.pointerId)) return;
     menu.releasePointerCapture(evt.pointerId);
