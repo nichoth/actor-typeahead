@@ -55,6 +55,7 @@ template.innerHTML = `
       width: 100%;
       height: calc(1.5rem + 6px * 2);
       border-radius: calc(var(--radius-inherited) - var(--padding-menu-inherited));
+      cursor: default;
     }
 
     .user:hover,
@@ -155,10 +156,6 @@ export default class ActorTypeahead extends HTMLElement {
         this.#onkeydown(/** @type {KeyboardEvent} */ (evt));
         break;
 
-      case "click":
-        this.#onclick(/** @type {PointerEvent} */ (evt));
-        break;
-
       case "focusout":
         this.#onfocusout(evt);
         break;
@@ -214,17 +211,6 @@ export default class ActorTypeahead extends HTMLElement {
     }
   }
 
-  /** @param {PointerEvent} evt */
-  #onclick(evt) {
-    const button = evt.target?.closest(".user");
-    const input = this.querySelector("input");
-    if (!input || !button) return;
-
-    input.value = button.dataset.handle;
-    this.#actors = [];
-    this.#render();
-  }
-
   /** @param {InputEvent} evt */
   async #oninput(evt) {
     const query = evt.target?.value;
@@ -278,22 +264,21 @@ export default class ActorTypeahead extends HTMLElement {
 
   /** @param {PointerEvent} evt */
   #onpointerdown(evt) {
-    const menu = this.#shadow.querySelector(".menu");
-    if (!menu) return;
-
-    if (!menu.contains(evt.target)) return;
-    menu.setPointerCapture(evt.pointerId);
     this.#pressed = true;
   }
 
   /** @param {PointerEvent} evt */
   #onpointerup(evt) {
-    const menu = this.#shadow.querySelector(".menu");
-    if (!menu) return;
-
-    if (!menu.hasPointerCapture(evt.pointerId)) return;
-    menu.releasePointerCapture(evt.pointerId);
     this.#pressed = false;
+
     this.querySelector("input")?.focus();
+
+    const button = evt.target?.closest(".user");
+    const input = this.querySelector("input");
+    if (!input || !button) return;
+
+    input.value = button.dataset.handle;
+    this.#actors = [];
+    this.#render();
   }
 }
