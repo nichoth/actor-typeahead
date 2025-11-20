@@ -214,7 +214,7 @@ export default class ActorTypeahead extends HTMLElement {
 
       case "Enter":
         evt.preventDefault();
-        this.#shadow.querySelectorAll("button")[this.#index]?.click();
+        this.#shadow.querySelectorAll("button")[this.#index]?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
         break;
     }
   }
