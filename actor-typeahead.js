@@ -106,6 +106,30 @@ function clone(tmpl) {
   return /** @type {T} */ (tmpl.cloneNode(true));
 }
 
+/**
+ * @attribute {string} [host] - The host to which to make the typeahead API call.
+ * @attribute {number} [rows] - The maximum number of rows to display in the dropdown.
+ *
+ * @csspart menu - The dropdown menu.
+ * @csspart user - The user row.
+ * @csspart avatar - The user avatar wrapper.
+ * @csspart img - The user avatar image.
+ * @csspart handle - The user handle text.
+ *
+ * @slot - The <input> tag to progressively enhance.
+ *
+ * @cssprop --color-background - Controls the color of the dropdown background.
+ * @cssprop --color-border - Controls the color of the dropdown border.
+ * @cssprop --color-shadow - Controls the color of the dropdown shadow.
+ * @cssprop --color-hover - Controls the background color of each row on hover.
+ * @cssprop --color-avatar-fallback - Controls the background color of an avatar circle if the image fails to load.
+ * @cssprop --radius - Controls the corner radius of the dropdown.
+ * @cssprop --padding-menu - Controls the padding of the dropdown menu.
+ *
+ * @summary A small web component that progressively enhances an <input> element into an autocomplete for ATProto handles!
+ *
+ * @tag actor-typeahead
+ */
 export default class ActorTypeahead extends HTMLElement {
   static tag = "actor-typeahead";
 
@@ -214,7 +238,9 @@ export default class ActorTypeahead extends HTMLElement {
 
       case "Enter":
         evt.preventDefault();
-        this.#shadow.querySelectorAll("button")[this.#index]?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+        this.#shadow
+          .querySelectorAll("button")
+          [this.#index]?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
         break;
     }
   }

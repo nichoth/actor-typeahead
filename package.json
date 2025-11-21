@@ -1,18 +1,21 @@
 {
   "name": "actor-typeahead",
   "version": "0.1.1",
-  "description": "",
+  "description": "A small web component that progressively enhances an <input> element into an autocomplete for ATProto handles.",
   "main": "actor-typeahead.js",
+  "type": "module",
+  "customElements": "custom-elements.json",
   "scripts": {
-    "typecheck": "tsc -p jsconfig.json"
+    "typecheck": "tsc -p jsconfig.json",
+    "manifest": "cem analyze"
   },
   "repository": {
     "type": "git",
     "url": "git@tangled.sh:jakelazaroff.com/actor-typeahead"
   },
-  "author": "",
   "license": "MPL-2.0",
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.11.0",
     "typescript": "^5.9.3"
   }
 }
