@@ -1,5 +1,7 @@
 # actor-typeahead
 
+![NPM Version](https://img.shields.io/npm/v/actor-typeahead)
+
 A small web component that progressively enhances an `<input>` element into an autocomplete for ATProto handles!
 
 It works with any web stack and any JavaScript framework.
@@ -22,10 +24,12 @@ If you'd like to use a different tag, you can import the file with a query strin
 
 If you'd prefer to manually register the custom element, you can use the query string `?tag=none` and call the static method `define`:
 
+```html
 <script type="module">
   import ActorTypeahead from "actor-typeahead.js?tag=none";
   ActorTypeahead.define("some-other-tag");
 </script>
+```
 
 If you're using a bundler, you can install it from npm:
 
