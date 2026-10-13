@@ -243,6 +243,37 @@ test('repeated renders and clears do not throw', async t => {
     t.equal(isOpen(el), false, 'still closed')
 })
 
+test('a response after the element is removed does not throw',
+    async t => {
+        const { el, input } = await setup()
+        let respond:(res:Response) => void = () => {}
+        window.fetch = () => new Promise(resolve => { respond = resolve })
+
+        const errors:unknown[] = []
+        const onerror = (ev:PromiseRejectionEvent) => {
+            ev.preventDefault()
+            errors.push(ev.reason)
+        }
+        window.addEventListener('unhandledrejection', onerror)
+
+        type(input, 'ali')
+        el.remove()
+        respond(new Response(JSON.stringify({ actors: ACTORS })))
+        // waitFor watches the document, so poll the detached element
+        for (let i = 0; i < 100; i++) {
+            if (results(el).length === ACTORS.length) break
+            await sleep(10)
+        }
+        // the rejection event is dispatched after the current task
+        await sleep(50)
+
+        window.removeEventListener('unhandledrejection', onerror)
+        window.fetch = fakeFetch
+        t.equal(results(el).length, ACTORS.length, 'should render')
+        t.equal(errors.length, 0, 'should not reject')
+        t.equal(isOpen(el), false, 'should not be open')
+    })
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
@@ -427,6 +458,10 @@ function checkExpanded (
         String(isOpen(el)),
         'aria-expanded matches the popover open state'
     )
+}
+
+function sleep (ms:number):Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function type (input:HTMLInputElement, value:string) {

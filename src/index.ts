@@ -270,11 +270,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
     /**
      * Show or hide the Suggestion list popover, guarded on its current
-     * state so repeated renders neither throw nor toggle. Returns whether
-     * the Suggestion list is open.
+     * state so repeated renders neither throw nor toggle. A disconnected
+     * popover cannot be shown, e.g. when a response arrives after the host
+     * was removed. Returns whether the Suggestion list is open.
      */
     #toggle (list:HTMLElement, open:boolean):boolean {
         if (!ANCHORED) return open
+        if (!list.isConnected) return false
 
         const isOpen = list.matches(':popover-open')
         if (open && !isOpen) list.showPopover()
