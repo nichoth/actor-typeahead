@@ -1,4 +1,5 @@
 # actor-typeahead
+
 [![tests](https://img.shields.io/github/actions/workflow/status/nichoth/actor-typeahead/nodejs.yml?style=flat-square)](https://github.com/nichoth/actor-typeahead/actions/workflows/nodejs.yml)
 [![types](https://img.shields.io/npm/types/@substrate-system/actor-typeahead?style=flat-square)](README.md)
 [![module](https://img.shields.io/badge/module-ESM%2FCJS-blue?style=flat-square)](README.md)
@@ -13,7 +14,7 @@ any JavaScript framework.
 
 This is a fork of
 [Jake Lazaroff's actor-typeahead](https://tangled.org/jakelazaroff.com/actor-typeahead),
-rewritten in TypeScript to render into light DOM. See
+rewritten in TypeScript, and rendering in light DOM only. See
 [Differences from upstream](#differences-from-upstream).
 
 [See a live demo](https://nichoth.github.io/actor-typeahead/)
@@ -236,13 +237,13 @@ cp ./node_modules/@substrate-system/actor-typeahead/dist/index.min.css ./public/
 
 ## Differences from upstream
 
-* The component renders into light DOM instead of a closed shadow root.
+* The component renders into light DOM instead of shadow DOM.
   Style it with the class names above rather than `::part()`. The
   styles ship as a separate stylesheet, so import the CSS.
 * The `?tag=` query string and `define(tag)` are gone. The tag is always
   `actor-typeahead`.
 * It emits an `actor-typeahead:select` event when a result is chosen.
-* The package is `@substrate-system/actor-typeahead`.
+
 
 ## Develop
 
