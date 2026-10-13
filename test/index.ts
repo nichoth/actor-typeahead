@@ -91,6 +91,26 @@ test('aria-activedescendant tracks the highlighted option', async t => {
     )
 })
 
+test('autocomplete is off unless the page sets it', async t => {
+    const { input } = await setup()
+    t.equal(input.getAttribute('autocomplete'), 'off', 'defaults to off')
+
+    requests = []
+    document.body.innerHTML = `<${ActorTypeahead.TAG}>
+        <input autocomplete="username">
+    </${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const authored = el.querySelector('input')!
+    type(authored, 'ali')
+    await waitFor(OPTION)
+
+    t.equal(
+        authored.getAttribute('autocomplete'),
+        'username',
+        'should keep the authored value'
+    )
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')

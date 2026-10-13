@@ -231,6 +231,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         if (input) {
             input.setAttribute('role', 'combobox')
             input.setAttribute('aria-autocomplete', 'list')
+            if (!input.hasAttribute('autocomplete')) {
+                input.setAttribute('autocomplete', 'off')
+            }
             input.setAttribute('aria-controls', list.id)
             input.setAttribute(
                 'aria-expanded',
