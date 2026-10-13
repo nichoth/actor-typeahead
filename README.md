@@ -1,11 +1,11 @@
 # actor-typeahead
-![tests](https://github.com/nichoth/actor-typeahead/actions/workflows/nodejs.yml/badge.svg)
+[![tests](https://img.shields.io/github/actions/workflow/status/nichoth/actor-typeahead/nodejs.yml?style=flat-square)](https://github.com/nichoth/actor-typeahead/actions/workflows/nodejs.yml)
 [![types](https://img.shields.io/npm/types/@substrate-system/actor-typeahead?style=flat-square)](README.md)
 [![module](https://img.shields.io/badge/module-ESM%2FCJS-blue?style=flat-square)](README.md)
 [![GZip size](https://flat.badgen.net/bundlephobia/minzip/@substrate-system/actor-typeahead)](https://bundlephobia.com/package/@substrate-system/actor-typeahead)
 [![semantic versioning](https://img.shields.io/badge/semver-2.0.0-blue?logo=semver&style=flat-square)](https://semver.org/)
 [![Common Changelog](https://nichoth.github.io/badge/common-changelog.svg)](./CHANGELOG.md)
-[![license](https://img.shields.io/badge/license-MPL--2.0-blue?style=flat-square)](LICENSE)
+[![License MPL-2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen?style=flat-square)](./LICENSE)
 
 A small web component that progressively enhances an `<input>` element
 into an autocomplete for ATProto handles. It works with any web stack and
