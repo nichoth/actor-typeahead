@@ -43,7 +43,7 @@ keyboard and pointer behavior.
 
 **Status:** ready-for-agent
 
-- [ ] The input has `role="combobox"` and its `aria-controls` references
+- [x] The input has `role="combobox"` and its `aria-controls` references
       the element with `role="listbox"`
 - [ ] The input's `aria-expanded` is `"true"` while Suggestions are
       shown and `"false"` after Escape, selection, or an emptied input
@@ -52,10 +52,10 @@ keyboard and pointer behavior.
       other option is selected
 - [ ] With no highlighted Suggestion, the input has no
       `aria-activedescendant`
-- [ ] A consumer-set `autocomplete` value on the input is preserved; an
+- [x] A consumer-set `autocomplete` value on the input is preserved; an
       input without one gets `autocomplete="off"`
-- [ ] When the input has a `<label>` with an id, the listbox's
+- [x] When the input has a `<label>` with an id, the listbox's
       `aria-labelledby` references it
-- [ ] Two instances on one page produce distinct listbox and option ids
+- [x] Two instances on one page produce distinct listbox and option ids
 - [ ] Pointer selection on an option still selects that Actor and fires
       `select`, and selecting inside a form still does not submit it
