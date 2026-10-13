@@ -47,6 +47,28 @@ test('the input is a combobox that controls the listbox', async t => {
     t.equal(list?.getAttribute('role'), 'listbox', 'should be the listbox')
 })
 
+test('aria-expanded follows the Suggestions', async t => {
+    const { input } = await setup()
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'starts closed')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.equal(input.getAttribute('aria-expanded'), 'true', 'open with results')
+    key(input, 'Escape')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'Escape closes')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    key(input, 'Enter')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'select closes')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    type(input, '')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'empty closes')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
