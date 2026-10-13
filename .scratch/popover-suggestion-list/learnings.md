@@ -78,3 +78,39 @@ dist/custom-elements.json lists --padding-suggestion-list, no padding-menu.
 The `rows` attribute keeps its name (public attribute, not in ticket scope).
 
 ---
+<!-- nightralph:entry ticket=popover-suggestion-list:2 attempt=1 outcome=done -->
+## 2026-10-13 12:40 -- popover-suggestion-list/02 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.22. Checked items: "The input has `role="combobox"` and its `aria-controls` references the element with `role="listbox"`", "A consumer-set `autocomplete` value on the input is preserved; an input without one gets `autocomplete="off"`", "When the input has a `<label>` with an id, the listbox's `aria-labelledby` references it", "Two instances on one page produce distinct listbox and option ids".
+
+### Agent notes
+# Ticket 02: Suggestion list as an ARIA combobox
+
+All checklist items done, each test-first (red seen before green).
+
+Implemented (src/index.ts):
+- Suggestion is `<li class="suggestion" role="option" id aria-selected>`;
+  inner button removed. data-index/data-handle moved to the li.
+- Suggestion list gets `role="listbox"` and id `${prefix}-list`.
+- Per-instance prefix `actor-typeahead-N` from a module counter; option
+  ids `${prefix}-option-${i}`.
+- render() writes on the input: role=combobox, aria-autocomplete=list,
+  aria-controls, aria-expanded (= actors.length > 0, ticket 03 ties to
+  popover), aria-activedescendant (removed when index has no actor),
+  autocomplete=off only when absent.
+- aria-labelledby on listbox = ids of input.labels that have an id
+  (space-joined), removed otherwise.
+- #onpointerup uses closest('[role="option"]').
+- CSS: highlight keys on [aria-selected="true"]. `.suggestion` keeps
+  `all: unset` + display:flex, now applied to the li.
+- README markup example + note updated. AGENTS.md gained test notes.
+
+Tests (test/index.ts): results() and waitFor use [role="option"];
+added: combobox/controls, aria-expanded, activedescendant, autocomplete,
+aria-labelledby, two-instance ids (verified it fails with a constant
+prefix), pointerup-off-option refocus, select event on pointer select.
+
+Reading of vague criteria: "no option selected" -> every non-highlighted
+option has aria-selected="false" (always written).
+
+---
