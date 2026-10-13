@@ -170,16 +170,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #onpointerup (evt:Event) {
         this.#pressed = false
 
-        const button = evt.target instanceof Element ?
-            evt.target.closest('button') :
+        const option = evt.target instanceof Element ?
+            evt.target.closest<HTMLElement>('[role="option"]') :
             null
 
-        if (!button) {
+        if (!option) {
             this.qs('input')?.focus()
             return
         }
 
-        this.#select(Number(button.dataset.index))
+        this.#select(Number(option.dataset.index))
     }
 
     #select (index:number) {
@@ -233,14 +233,11 @@ function suggestion (
     active:boolean
 ):HTMLLIElement {
     const li = document.createElement('li')
-
-    // `type="button"` so a click does not submit a surrounding form
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'suggestion'
-    button.dataset.index = String(index)
-    button.dataset.handle = actor.handle
-    if (active) button.dataset.active = 'true'
+    li.className = 'suggestion'
+    li.setAttribute('role', 'option')
+    li.setAttribute('aria-selected', String(active))
+    li.dataset.index = String(index)
+    li.dataset.handle = actor.handle
 
     const avatar = document.createElement('div')
     avatar.className = 'avatar'
@@ -255,8 +252,7 @@ function suggestion (
     handle.textContent = actor.handle
 
     avatar.append(img)
-    button.append(avatar, handle)
-    li.append(button)
+    li.append(avatar, handle)
 
     return li
 }

@@ -14,8 +14,10 @@ window.fetch = async (input:RequestInfo|URL) => {
     return new Response(JSON.stringify({ actors: ACTORS }))
 }
 
-function results (el:ActorTypeahead):NodeListOf<HTMLButtonElement> {
-    return el.querySelectorAll('button')
+const OPTION = 'actor-typeahead [role="option"]'
+
+function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
+    return el.querySelectorAll('[role="option"]')
 }
 
 test('keeps the authored input element', async t => {
@@ -32,7 +34,7 @@ test('keeps the authored input element', async t => {
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     t.equal(requests.length, 1, 'should make one request')
     const [url] = requests
@@ -49,7 +51,7 @@ test('typing queries the typeahead API', async t => {
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     const [url] = requests
     t.equal(url.origin, 'https://example.test', 'should use the host')
@@ -72,7 +74,7 @@ test('select with the keyboard', async t => {
     })
 
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
     key(input, 'ArrowDown')
     key(input, 'ArrowDown')
     key(input, 'Enter')
@@ -85,7 +87,7 @@ test('select with the keyboard', async t => {
 test('arrow keys stop at the last result', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     for (let i = 0; i < ACTORS.length + 3; i++) key(input, 'ArrowDown')
     key(input, 'Enter')
@@ -97,7 +99,7 @@ test('arrow keys stop at the last result', async t => {
 test('Escape closes the menu', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
     key(input, 'Escape')
 
     t.equal(results(el).length, 0, 'should close the menu')
@@ -107,11 +109,11 @@ test('Escape closes the menu', async t => {
 test('select with the pointer', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
-    const button = results(el)[1]
-    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    const option = results(el)[1]
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
 
     t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
     t.equal(results(el).length, 0, 'should close the menu')
@@ -133,8 +135,8 @@ test('clicking a result does not submit a form', async t => {
     })
 
     type(input, 'ali')
-    const button = await waitFor('actor-typeahead button')
-    button!.click()
+    const option = await waitFor(OPTION)
+    option!.click()
 
     t.equal(submits, 0, 'should not submit')
 })
