@@ -56,7 +56,7 @@ Wrap an `<input>` with `<actor-typeahead>`, and import the JS and CSS.
 
 ```html
 <actor-typeahead>
-    <input>
+    <input />
 </actor-typeahead>
 ```
 
@@ -95,7 +95,7 @@ it more than once is safe.
 
 ```html
 <actor-typeahead host="https://public.api.bsky.app" rows="3">
-    <input>
+    <input />
 </actor-typeahead>
 ```
 
@@ -105,7 +105,7 @@ Both are reflected as properties, so `el.rows = '3'` works too.
 
 Events are namespaced by the tag name.
 
-* `actor-typeahead:select` -- A result was chosen. The event `detail` is
+* `actor-typeahead:select` -- A result was chosen. The event's `detail` is
   `{ handle, avatar? }`.
 
 ```ts
