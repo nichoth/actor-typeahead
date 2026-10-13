@@ -14,6 +14,10 @@ actor-typeahead {
     position: relative;
     font-family: system-ui;
 
+    /* every host scopes the same anchor name to its own Suggestion list */
+    anchor-name: --actor-typeahead;
+    anchor-scope: --actor-typeahead;
+
     /*
      * Scoped to the Suggestion list, so the authored <input> keeps its own
      * styles
@@ -46,6 +50,28 @@ actor-typeahead {
 
         &:empty {
             display: none;
+        }
+
+        /*
+         * The popover attribute is only set when anchor positioning is
+         * supported. The list then sits in the top layer, below the host,
+         * and flips above it when it would overflow the viewport.
+         */
+        &[popover] {
+            position: fixed;
+            position-anchor: --actor-typeahead;
+            position-try-fallbacks: flip-block;
+            inset: auto;
+            top: anchor(bottom);
+            left: anchor(left);
+            margin: 0;
+            margin-block-start: 4px;
+            width: anchor-size(width);
+            color: inherit;
+
+            &:not(:popover-open) {
+                display: none;
+            }
         }
     }
 

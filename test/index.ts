@@ -9,12 +9,19 @@ const ACTORS:Actor[] = [
 
 let requests:URL[] = []
 
-window.fetch = async (input:RequestInfo|URL) => {
+async function fakeFetch (input:RequestInfo|URL):Promise<Response> {
     requests.push(new URL(String(input)))
     return new Response(JSON.stringify({ actors: ACTORS }))
 }
 
+window.fetch = fakeFetch
+
 const OPTION = 'actor-typeahead [role="option"]'
+
+function isOpen (el:ActorTypeahead):boolean {
+    const list = el.querySelector('[role="listbox"]')
+    return !!list && list.matches(':popover-open')
+}
 
 function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
     return el.querySelectorAll('[role="option"]')
@@ -48,25 +55,30 @@ test('the input is a combobox that controls the listbox', async t => {
 })
 
 test('aria-expanded follows the Suggestions', async t => {
-    const { input } = await setup()
+    const { el, input } = await setup()
     t.equal(input.getAttribute('aria-expanded'), 'false', 'starts closed')
 
     type(input, 'ali')
     await waitFor(OPTION)
     t.equal(input.getAttribute('aria-expanded'), 'true', 'open with results')
+    checkExpanded(t, el, input)
     key(input, 'Escape')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'Escape closes')
+    checkExpanded(t, el, input)
 
     type(input, 'ali')
     await waitFor(OPTION)
     key(input, 'ArrowDown')
+    checkExpanded(t, el, input)
     key(input, 'Enter')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'select closes')
+    checkExpanded(t, el, input)
 
     type(input, 'ali')
     await waitFor(OPTION)
     type(input, '')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'empty closes')
+    checkExpanded(t, el, input)
 })
 
 test('aria-activedescendant tracks the highlighted option', async t => {
@@ -156,6 +168,79 @@ test('two instances have distinct ids', async t => {
     t.equal(ids.length, 2 * (1 + ACTORS.length), 'every element is counted')
     t.ok(ids.every(Boolean), 'every element has an id')
     t.equal(new Set(ids).size, ids.length, 'ids are unique')
+})
+
+test('the Suggestion list is open exactly when it has Suggestions',
+    async t => {
+        const { el, input } = await setup()
+        t.equal(isOpen(el), false, 'closed before typing')
+
+        type(input, 'ali')
+        await waitFor(OPTION)
+        t.equal(isOpen(el), true, 'open with Suggestions')
+
+        window.fetch = async () => {
+            return new Response(JSON.stringify({ actors: [] }))
+        }
+        type(input, 'zzz')
+        await waitFor(null, null, () => {
+            return results(el).length === 0 ? el : null
+        })
+        window.fetch = fakeFetch
+        t.equal(isOpen(el), false, 'closed with no Suggestions')
+    })
+
+test('the Suggestion list closes', async t => {
+    const { el, input } = await setup()
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'Escape')
+    t.equal(isOpen(el), false, 'after Escape')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    key(input, 'Enter')
+    t.equal(isOpen(el), false, 'after keyboard selection')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    const option = results(el)[0]
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    t.equal(isOpen(el), false, 'after pointer selection')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    type(input, '')
+    t.equal(isOpen(el), false, 'after the input is emptied')
+})
+
+test('repeated renders and clears do not throw', async t => {
+    const { el, input } = await setup()
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    let error:unknown = null
+    try {
+        el.render()
+        el.render()
+    } catch (err) {
+        error = err
+    }
+    t.equal(error, null, 'rendering twice while open')
+    t.equal(isOpen(el), true, 'still open')
+
+    try {
+        key(input, 'Escape')
+        key(input, 'Escape')
+        el.render()
+    } catch (err) {
+        error = err
+    }
+    t.equal(error, null, 'clearing twice while closed')
+    t.equal(isOpen(el), false, 'still closed')
 })
 
 test('typing queries the typeahead API', async t => {
@@ -329,6 +414,18 @@ function checkActive (
         id && document.getElementById(id),
         selected[0],
         'aria-activedescendant references the selected option'
+    )
+}
+
+function checkExpanded (
+    t:Test,
+    el:ActorTypeahead,
+    input:HTMLInputElement
+) {
+    t.equal(
+        input.getAttribute('aria-expanded'),
+        String(isOpen(el)),
+        'aria-expanded matches the popover open state'
     )
 }
 
