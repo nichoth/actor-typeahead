@@ -111,6 +111,28 @@ test('autocomplete is off unless the page sets it', async t => {
     )
 })
 
+test('the listbox is labelled by the input\'s label', async t => {
+    document.body.innerHTML = `<label id="handle-label" for="handle">
+        Handle
+    </label>
+    <${ActorTypeahead.TAG}><input id="handle"></${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const list = el.querySelector('[role="listbox"]')!
+
+    t.equal(
+        list.getAttribute('aria-labelledby'),
+        'handle-label',
+        'should reference the label'
+    )
+
+    const { el: plain } = await setup()
+    t.ok(
+        !plain.querySelector('[role="listbox"]')!
+            .hasAttribute('aria-labelledby'),
+        'no label, no aria-labelledby'
+    )
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')

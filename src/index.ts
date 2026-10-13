@@ -240,6 +240,15 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 String(this.#actors.length > 0)
             )
 
+            const labels = [...(input.labels ?? [])]
+                .map(label => label.id)
+                .filter(Boolean)
+            if (labels.length) {
+                list.setAttribute('aria-labelledby', labels.join(' '))
+            } else {
+                list.removeAttribute('aria-labelledby')
+            }
+
             if (this.#actors[this.#index]) {
                 input.setAttribute(
                     'aria-activedescendant',
