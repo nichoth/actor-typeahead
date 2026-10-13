@@ -31,6 +31,22 @@ test('keeps the authored input element', async t => {
     t.equal(el.querySelector('input'), input, 'should be the same node')
 })
 
+test('the input is a combobox that controls the listbox', async t => {
+    const { el, input } = await setup()
+
+    t.equal(input.getAttribute('role'), 'combobox', 'combobox role')
+    t.equal(
+        input.getAttribute('aria-autocomplete'),
+        'list',
+        'should autocomplete with a list'
+    )
+    const id = input.getAttribute('aria-controls')
+    t.ok(id, 'should have aria-controls')
+    const list = id ? document.getElementById(id) : null
+    t.ok(list && el.contains(list), 'should reference this element\'s list')
+    t.equal(list?.getAttribute('role'), 'listbox', 'should be the listbox')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')

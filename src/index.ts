@@ -24,6 +24,9 @@ export interface Actor {
 const DEFAULT_HOST = 'https://public.api.bsky.app'
 const DEFAULT_ROWS = 5
 
+// counts instances, so each one gets unique element ids
+let instances = 0
+
 /**
  * @attribute {string} [host] - The host to which to make the typeahead
  * API call.
@@ -58,6 +61,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     declare host:string|null
     declare rows:string|null
 
+    #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
     #pressed = false
@@ -208,6 +212,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         if (!this.#suggestionList) {
             this.#suggestionList = document.createElement('ul')
             this.#suggestionList.className = 'suggestion-list'
+            this.#suggestionList.id = `${this.#id}-list`
             this.#suggestionList.setAttribute('role', 'listbox')
             this.#suggestionList.addEventListener('pointerdown', this)
             this.#suggestionList.addEventListener('pointerup', this)
@@ -215,6 +220,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
         const list = this.#suggestionList
         if (list.parentNode !== this) this.append(list)
+
+        const input = this.qs('input')
+        if (input) {
+            input.setAttribute('role', 'combobox')
+            input.setAttribute('aria-autocomplete', 'list')
+            input.setAttribute('aria-controls', list.id)
+        }
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
             return suggestion(actor, i, i === this.#index)
