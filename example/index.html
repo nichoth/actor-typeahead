@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" class="reduce-fouce">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>actor-typeahead</title>
+
+    <!--
+      Page level FOUCE guard. Inline, not linked, because it has to
+      apply before the first paint.
+    -->
+    <style>
+        html.reduce-fouce { opacity: 0; }
+    </style>
+
+    <!-- Without JS the components never define, so reveal the page. -->
+    <noscript>
+        <style>
+            html.reduce-fouce { opacity: 1 !important; }
+        </style>
+    </noscript>
+</head>
+<body>
+    <label for="handle">Handle</label>
+    <div style="width: min-content">
+        <actor-typeahead>
+            <input id="handle" autocomplete="off">
+        </actor-typeahead>
+    </div>
+
+    <p>Selected: <output id="selected"></output></p>
+
+    <script type="module" src="./index.ts"></script>
+</body>
+</html>

@@ -1,2 +1,14 @@
+node_modules
+bundle.js
 .DS_Store
-/node_modules
+test/*.js
+dist
+.env
+public
+docs/*
+!docs/GLOSSARY.md
+!docs/adr/
+.claude
+.agents
+.claude
+WIP.md

@@ -1,0 +1,93 @@
+actor-typeahead {
+    --color-background-inherited: var(--color-background, #fff);
+    --color-border-inherited: var(--color-border, #0002);
+    --color-shadow-inherited: var(--color-shadow, #000);
+    --color-hover-inherited: var(--color-hover, #0001);
+    --color-avatar-fallback-inherited: var(--color-avatar-fallback, #0002);
+    --radius-inherited: var(--radius, 8px);
+    --padding-menu-inherited: var(--padding-menu, 4px);
+
+    display: block;
+    position: relative;
+    font-family: system-ui;
+
+    /* Scoped to the menu, so the authored <input> keeps its own styles */
+    & .menu,
+    & .menu *,
+    & .menu *::before,
+    & .menu *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    & .menu {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        left: 0;
+        margin-top: 4px;
+        width: 100%;
+        list-style: none;
+        overflow: hidden;
+        background-color: var(--color-background-inherited);
+        background-clip: padding-box;
+        border: 1px solid var(--color-border-inherited);
+        border-radius: var(--radius-inherited);
+        box-shadow: 0 6px 6px -4px
+            rgb(from var(--color-shadow-inherited) r g b / 20%);
+        padding: var(--padding-menu-inherited);
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    & .user {
+        all: unset;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        width: 100%;
+        height: calc(1.5rem + 6px * 2);
+        border-radius: calc(
+            var(--radius-inherited) - var(--padding-menu-inherited)
+        );
+        cursor: default;
+
+        &:hover,
+        &[data-active="true"] {
+            background-color: var(--color-hover-inherited);
+        }
+    }
+
+    & .avatar {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background-color: var(--color-avatar-fallback-inherited);
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    & .img {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    & .handle {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/**
+ * Don't show until JavaScript is instantiated
+ */
+actor-typeahead:not(:defined) {
+    display: none;
+}
