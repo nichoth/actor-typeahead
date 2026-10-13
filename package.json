@@ -1,6 +1,6 @@
 {
   "name": "@substrate-system/actor-typeahead",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A small web component that progressively enhances an <input> element into an autocomplete for ATProto handles.",
   "type": "module",
   "main": "dist/index.js",
