@@ -25,3 +25,9 @@ Single-context layout. See `docs/agents/domain.md`.
 * Lines stay under 80 columns in `.ts`, `.css` and `.md` files.
 * Verify with `npm run lint`, `npx stylelint src/*.css`, `npm test`
   (browser tests via tapzero + tapout) and `npm run build`.
+* `render()` owns every attribute written on the Authored input (the
+  ARIA combobox set and the `autocomplete` default). Ids come from a
+  per-instance prefix in `src/index.ts`; never hard-code element ids.
+* Tests locate Suggestions with `[role="option"]` and the Suggestion
+  list with `[role="listbox"]`, not with class names. tapzero's `Test`
+  has `ok`, `equal`, `deepEqual`, `notEqual` but no `notOk`.

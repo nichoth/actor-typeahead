@@ -24,6 +24,9 @@ export interface Actor {
 const DEFAULT_HOST = 'https://public.api.bsky.app'
 const DEFAULT_ROWS = 5
 
+// counts instances, so each one gets unique element ids
+let instances = 0
+
 /**
  * @attribute {string} [host] - The host to which to make the typeahead
  * API call.
@@ -58,6 +61,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     declare host:string|null
     declare rows:string|null
 
+    #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
     #pressed = false
@@ -170,16 +174,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #onpointerup (evt:Event) {
         this.#pressed = false
 
-        const button = evt.target instanceof Element ?
-            evt.target.closest('button') :
+        const option = evt.target instanceof Element ?
+            evt.target.closest<HTMLElement>('[role="option"]') :
             null
 
-        if (!button) {
+        if (!option) {
             this.qs('input')?.focus()
             return
         }
 
-        this.#select(Number(button.dataset.index))
+        this.#select(Number(option.dataset.index))
     }
 
     #select (index:number) {
@@ -202,12 +206,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     /**
      * Render into light DOM, next to the authored `<input>`. Only the
      * Suggestion list is rebuilt, so the input element, and anything the
-     * consumer attached to it, is never replaced.
+     * consumer attached to it, is never replaced. On the input, only the
+     * ARIA combobox attributes are written, plus `autocomplete="off"`
+     * when the page did not set `autocomplete`.
      */
     render () {
         if (!this.#suggestionList) {
             this.#suggestionList = document.createElement('ul')
             this.#suggestionList.className = 'suggestion-list'
+            this.#suggestionList.id = `${this.#id}-list`
+            this.#suggestionList.setAttribute('role', 'listbox')
             this.#suggestionList.addEventListener('pointerdown', this)
             this.#suggestionList.addEventListener('pointerup', this)
         }
@@ -216,8 +224,46 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         if (list.parentNode !== this) this.append(list)
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
-            return suggestion(actor, i, i === this.#index)
+            const option = suggestion(actor, i, i === this.#index)
+            option.id = this.#optionId(i)
+            return option
         }))
+
+        const input = this.qs('input')
+        if (input) {
+            input.setAttribute('role', 'combobox')
+            input.setAttribute('aria-autocomplete', 'list')
+            if (!input.hasAttribute('autocomplete')) {
+                input.setAttribute('autocomplete', 'off')
+            }
+            input.setAttribute('aria-controls', list.id)
+            input.setAttribute(
+                'aria-expanded',
+                String(this.#actors.length > 0)
+            )
+
+            const labels = [...(input.labels ?? [])]
+                .map(label => label.id)
+                .filter(Boolean)
+            if (labels.length) {
+                list.setAttribute('aria-labelledby', labels.join(' '))
+            } else {
+                list.removeAttribute('aria-labelledby')
+            }
+
+            if (this.#actors[this.#index]) {
+                input.setAttribute(
+                    'aria-activedescendant',
+                    this.#optionId(this.#index)
+                )
+            } else {
+                input.removeAttribute('aria-activedescendant')
+            }
+        }
+    }
+
+    #optionId (index:number):string {
+        return `${this.#id}-option-${index}`
     }
 }
 
@@ -233,14 +279,11 @@ function suggestion (
     active:boolean
 ):HTMLLIElement {
     const li = document.createElement('li')
-
-    // `type="button"` so a click does not submit a surrounding form
-    const button = document.createElement('button')
-    button.type = 'button'
-    button.className = 'suggestion'
-    button.dataset.index = String(index)
-    button.dataset.handle = actor.handle
-    if (active) button.dataset.active = 'true'
+    li.className = 'suggestion'
+    li.setAttribute('role', 'option')
+    li.setAttribute('aria-selected', String(active))
+    li.dataset.index = String(index)
+    li.dataset.handle = actor.handle
 
     const avatar = document.createElement('div')
     avatar.className = 'avatar'
@@ -255,8 +298,7 @@ function suggestion (
     handle.textContent = actor.handle
 
     avatar.append(img)
-    button.append(avatar, handle)
-    li.append(button)
+    li.append(avatar, handle)
 
     return li
 }

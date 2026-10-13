@@ -1,4 +1,4 @@
-import { test } from '@substrate-system/tapzero'
+import { test, type Test } from '@substrate-system/tapzero'
 import { waitFor } from '@substrate-system/dom'
 import { ActorTypeahead, type Actor } from '../src/index.js'
 
@@ -14,8 +14,10 @@ window.fetch = async (input:RequestInfo|URL) => {
     return new Response(JSON.stringify({ actors: ACTORS }))
 }
 
-function results (el:ActorTypeahead):NodeListOf<HTMLButtonElement> {
-    return el.querySelectorAll('button')
+const OPTION = 'actor-typeahead [role="option"]'
+
+function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
+    return el.querySelectorAll('[role="option"]')
 }
 
 test('keeps the authored input element', async t => {
@@ -29,10 +31,137 @@ test('keeps the authored input element', async t => {
     t.equal(el.querySelector('input'), input, 'should be the same node')
 })
 
+test('the input is a combobox that controls the listbox', async t => {
+    const { el, input } = await setup()
+
+    t.equal(input.getAttribute('role'), 'combobox', 'combobox role')
+    t.equal(
+        input.getAttribute('aria-autocomplete'),
+        'list',
+        'should autocomplete with a list'
+    )
+    const id = input.getAttribute('aria-controls')
+    t.ok(id, 'should have aria-controls')
+    const list = id ? document.getElementById(id) : null
+    t.ok(list && el.contains(list), 'should reference this element\'s list')
+    t.equal(list?.getAttribute('role'), 'listbox', 'should be the listbox')
+})
+
+test('aria-expanded follows the Suggestions', async t => {
+    const { input } = await setup()
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'starts closed')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.equal(input.getAttribute('aria-expanded'), 'true', 'open with results')
+    key(input, 'Escape')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'Escape closes')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    key(input, 'Enter')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'select closes')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    type(input, '')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'empty closes')
+})
+
+test('aria-activedescendant tracks the highlighted option', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'nothing highlighted before arrow keys'
+    )
+
+    key(input, 'ArrowDown')
+    key(input, 'ArrowDown')
+    checkActive(t, el, input, 1)
+    key(input, 'ArrowUp')
+    checkActive(t, el, input, 0)
+
+    key(input, 'Escape')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'removed once closed'
+    )
+})
+
+test('autocomplete is off unless the page sets it', async t => {
+    const { input } = await setup()
+    t.equal(input.getAttribute('autocomplete'), 'off', 'defaults to off')
+
+    requests = []
+    document.body.innerHTML = `<${ActorTypeahead.TAG}>
+        <input autocomplete="username">
+    </${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const authored = el.querySelector('input')!
+    type(authored, 'ali')
+    await waitFor(OPTION)
+
+    t.equal(
+        authored.getAttribute('autocomplete'),
+        'username',
+        'should keep the authored value'
+    )
+})
+
+test('the listbox is labelled by the input\'s label', async t => {
+    document.body.innerHTML = `<label id="handle-label" for="handle">
+        Handle
+    </label>
+    <${ActorTypeahead.TAG}><input id="handle"></${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const list = el.querySelector('[role="listbox"]')!
+
+    t.equal(
+        list.getAttribute('aria-labelledby'),
+        'handle-label',
+        'should reference the label'
+    )
+
+    const { el: plain } = await setup()
+    t.ok(
+        !plain.querySelector('[role="listbox"]')!
+            .hasAttribute('aria-labelledby'),
+        'no label, no aria-labelledby'
+    )
+})
+
+test('two instances have distinct ids', async t => {
+    requests = []
+    document.body.innerHTML = `
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>`
+    await waitFor(ActorTypeahead.TAG)
+    const els = [...document.querySelectorAll(ActorTypeahead.TAG)]
+
+    for (const el of els) {
+        type(el.querySelector('input')!, 'ali')
+    }
+    await waitFor(null, null, () => {
+        const ready = els.every(el => results(el).length === ACTORS.length)
+        return ready ? els[0] : null
+    })
+
+    const ids = els.flatMap(el => {
+        return [...el.querySelectorAll('[role="listbox"], [role="option"]')]
+            .map(node => node.id)
+    })
+    t.equal(ids.length, 2 * (1 + ACTORS.length), 'every element is counted')
+    t.ok(ids.every(Boolean), 'every element has an id')
+    t.equal(new Set(ids).size, ids.length, 'ids are unique')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     t.equal(requests.length, 1, 'should make one request')
     const [url] = requests
@@ -49,7 +178,7 @@ test('typing queries the typeahead API', async t => {
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     const [url] = requests
     t.equal(url.origin, 'https://example.test', 'should use the host')
@@ -72,7 +201,7 @@ test('select with the keyboard', async t => {
     })
 
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
     key(input, 'ArrowDown')
     key(input, 'ArrowDown')
     key(input, 'Enter')
@@ -85,7 +214,7 @@ test('select with the keyboard', async t => {
 test('arrow keys stop at the last result', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
 
     for (let i = 0; i < ACTORS.length + 3; i++) key(input, 'ArrowDown')
     key(input, 'Enter')
@@ -97,7 +226,7 @@ test('arrow keys stop at the last result', async t => {
 test('Escape closes the menu', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    await waitFor(OPTION)
     key(input, 'Escape')
 
     t.equal(results(el).length, 0, 'should close the menu')
@@ -106,15 +235,36 @@ test('Escape closes the menu', async t => {
 
 test('select with the pointer', async t => {
     const { el, input } = await setup()
-    type(input, 'ali')
-    await waitFor('actor-typeahead button')
+    let selected:Actor|null = null
+    el.on<CustomEvent<Actor>>('select', ev => {
+        selected = ev.detail
+    })
 
-    const button = results(el)[1]
-    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    const option = results(el)[1]
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
 
     t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
+    t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
     t.equal(results(el).length, 0, 'should close the menu')
+})
+
+test('pointerup off a Suggestion refocuses the input', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    // a real press moves focus off the input between down and up
+    const list = el.querySelector('[role="listbox"]')!
+    list.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    input.blur()
+    list.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+
+    t.equal(document.activeElement, input, 'should focus the input')
+    t.equal(results(el).length, ACTORS.length, 'should stay open')
 })
 
 test('clicking a result does not submit a form', async t => {
@@ -133,8 +283,8 @@ test('clicking a result does not submit a form', async t => {
     })
 
     type(input, 'ali')
-    const button = await waitFor('actor-typeahead button')
-    button!.click()
+    const option = await waitFor(OPTION)
+    option!.click()
 
     t.equal(submits, 0, 'should not submit')
 })
@@ -158,6 +308,28 @@ async function setup (attrs = ''):Promise<{
     // const el = document.querySelector('actor-typeahead')!
     const input = el.querySelector('input')!
     return { el, input }
+}
+
+function checkActive (
+    t:Test,
+    el:ActorTypeahead,
+    input:HTMLInputElement,
+    index:number
+) {
+    const id = input.getAttribute('aria-activedescendant')
+    const options = [...results(el)]
+    const selected = options.filter(option => {
+        return option.getAttribute('aria-selected') === 'true'
+    })
+
+    t.ok(id, 'should have aria-activedescendant')
+    t.equal(selected.length, 1, 'exactly one option is selected')
+    t.equal(selected[0], options[index], 'the expected option is selected')
+    t.equal(
+        id && document.getElementById(id),
+        selected[0],
+        'aria-activedescendant references the selected option'
+    )
 }
 
 function type (input:HTMLInputElement, value:string) {
