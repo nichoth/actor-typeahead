@@ -114,3 +114,48 @@ Reading of vague criteria: "no option selected" -> every non-highlighted
 option has aria-selected="false" (always written).
 
 ---
+<!-- nightralph:entry ticket=popover-suggestion-list:3 attempt=1 outcome=done -->
+## 2026-10-13 12:45 -- popover-suggestion-list/03 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.02. Checked items: "Existing keyboard, pointer, Escape and no-form-submission tests still pass".
+
+### Agent notes
+# Ticket 03: Suggestion list in the top layer with anchor positioning
+
+All checklist items done, test-first where a test applies.
+
+Implemented:
+- src/index.ts: module constant `ANCHORED` =
+  `CSS.supports('anchor-scope: --a')`. When true the list gets
+  `popover = 'manual'`. `#toggle(list, open)` in render() shows/hides,
+  guarded on `:popover-open`, and returns the real open state;
+  `aria-expanded` is written from that return value.
+- src/index.css: host gets `anchor-name`/`anchor-scope: --actor-typeahead`.
+  `.suggestion-list[popover]`: fixed, `position-anchor`, `inset: auto`,
+  `top: anchor(bottom)`, `left: anchor(left)`, `margin-block-start: 4px`,
+  `width: anchor-size(width)`, `position-try-fallbacks: flip-block`,
+  `color: inherit` (UA popover sets CanvasText), and
+  `:not(:popover-open) { display: none }` (author display:flex otherwise
+  beats the UA hide rule). Fallback layout untouched.
+- test/index.ts: isOpen helper; tests for open-exactly-with-Suggestions
+  (incl. empty API result), closing (Escape, keyboard, pointer, emptied),
+  repeated render/clear, aria-expanded == :popover-open.
+- example/index.html: instance in an overflow:hidden box, one near the
+  bottom of the page. AGENTS.md: browser support section.
+
+Red/green evidence: item 1 failed before the popover existed. Items 2 and
+4 were verified by sabotage (removing hidePopover, inverting
+aria-expanded) and fail then. Item 3: unguarded togglePopover breaks the
+suite; unguarded show/hide do NOT throw in this Chromium (repeat calls are
+no-ops per current spec), so the guard itself is not separately
+observable there.
+
+Manual checks (Playwright against vite dev server, API stubbed): each
+instance positions its own list at host width with a 4px gap; the clipped
+one extends past its 64px container and is hit-testable; the bottom one
+flips above with the 4px gap mirrored; with ANCHORED forced false: no
+popover attribute, position absolute, 4px gap, hidden when empty.
+
+Docs-only/scaffolding (example, AGENTS.md): no tests, by design.
+
+---
