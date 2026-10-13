@@ -41,21 +41,21 @@ keyboard and pointer behavior.
 (the `results()` helper and the selectors passed to `waitFor`),
 `README.md` (markup example and the `data-active` note)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] The input has `role="combobox"` and its `aria-controls` references
       the element with `role="listbox"`
-- [ ] The input's `aria-expanded` is `"true"` while Suggestions are
+- [x] The input's `aria-expanded` is `"true"` while Suggestions are
       shown and `"false"` after Escape, selection, or an emptied input
-- [ ] After ArrowDown and ArrowUp, the input's `aria-activedescendant`
+- [x] After ArrowDown and ArrowUp, the input's `aria-activedescendant`
       references the option whose `aria-selected` is `"true"`, and no
       other option is selected
-- [ ] With no highlighted Suggestion, the input has no
+- [x] With no highlighted Suggestion, the input has no
       `aria-activedescendant`
 - [x] A consumer-set `autocomplete` value on the input is preserved; an
       input without one gets `autocomplete="off"`
 - [x] When the input has a `<label>` with an id, the listbox's
       `aria-labelledby` references it
 - [x] Two instances on one page produce distinct listbox and option ids
-- [ ] Pointer selection on an option still selects that Actor and fires
+- [x] Pointer selection on an option still selects that Actor and fires
       `select`, and selecting inside a form still does not submit it
