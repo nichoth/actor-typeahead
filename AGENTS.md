@@ -31,3 +31,17 @@ Single-context layout. See `docs/agents/domain.md`.
 * Tests locate Suggestions with `[role="option"]` and the Suggestion
   list with `[role="listbox"]`, not with class names. tapzero's `Test`
   has `ok`, `equal`, `deepEqual`, `notEqual` but no `notOk`.
+
+## Browser support
+
+* Baseline Newly available features are allowed when they are
+  feature-detected and degrade to the pre-existing behavior.
+* The Suggestion list is a `popover="manual"` positioned with CSS anchor
+  positioning only when `CSS.supports('anchor-scope: --a')` is true
+  (`ANCHORED` in `src/index.ts`). Its CSS keys on `[popover]`, so the
+  fallback absolute layout needs no extra class. Author `display` on the
+  list beats the UA popover rule, so `:not(:popover-open)` must hide it.
+* The test browser supports anchor positioning, so the fallback is only
+  checked by hand: set `ANCHORED` to `false` and use the example page,
+  which has instances in a clipping container and near the viewport
+  bottom.

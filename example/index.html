@@ -30,6 +30,28 @@
 
     <p>Selected: <output id="selected"></output></p>
 
+    <!--
+      Manual checks for the anchored Suggestion list: it should escape
+      this clipping container, and the one at the bottom of the page
+      should open above its input.
+    -->
+    <h2>Inside an <code>overflow: hidden</code> container</h2>
+    <div style="overflow: hidden; height: 4rem; width: min-content">
+        <label for="clipped">Handle</label>
+        <actor-typeahead>
+            <input id="clipped">
+        </actor-typeahead>
+    </div>
+
+    <h2>Near the bottom of the viewport</h2>
+    <div style="height: 100vh"></div>
+    <label for="bottom">Handle</label>
+    <div style="width: min-content">
+        <actor-typeahead>
+            <input id="bottom">
+        </actor-typeahead>
+    </div>
+
     <script type="module" src="./index.ts"></script>
 </body>
 </html>
