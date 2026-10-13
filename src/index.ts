@@ -24,6 +24,12 @@ export interface Actor {
 const DEFAULT_HOST = 'https://public.api.bsky.app'
 const DEFAULT_ROWS = 5
 
+// The Suggestion list is a top-layer popover, positioned against the host
+// with CSS anchor positioning. `anchor-scope` shipped last of that set, so
+// it gates the group. Without it, the old absolute layout is used.
+const ANCHORED = typeof CSS !== 'undefined' &&
+    CSS.supports('anchor-scope: --a')
+
 // counts instances, so each one gets unique element ids
 let instances = 0
 
@@ -216,6 +222,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             this.#suggestionList.className = 'suggestion-list'
             this.#suggestionList.id = `${this.#id}-list`
             this.#suggestionList.setAttribute('role', 'listbox')
+            if (ANCHORED) this.#suggestionList.popover = 'manual'
             this.#suggestionList.addEventListener('pointerdown', this)
             this.#suggestionList.addEventListener('pointerup', this)
         }
@@ -229,6 +236,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             return option
         }))
 
+        const open = this.#toggle(list, this.#actors.length > 0)
+
         const input = this.qs('input')
         if (input) {
             input.setAttribute('role', 'combobox')
@@ -237,10 +246,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 input.setAttribute('autocomplete', 'off')
             }
             input.setAttribute('aria-controls', list.id)
-            input.setAttribute(
-                'aria-expanded',
-                String(this.#actors.length > 0)
-            )
+            input.setAttribute('aria-expanded', String(open))
 
             const labels = [...(input.labels ?? [])]
                 .map(label => label.id)
@@ -260,6 +266,20 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 input.removeAttribute('aria-activedescendant')
             }
         }
+    }
+
+    /**
+     * Show or hide the Suggestion list popover, guarded on its current
+     * state so repeated renders neither throw nor toggle. Returns whether
+     * the Suggestion list is open.
+     */
+    #toggle (list:HTMLElement, open:boolean):boolean {
+        if (!ANCHORED) return open
+
+        const isOpen = list.matches(':popover-open')
+        if (open && !isOpen) list.showPopover()
+        if (!open && isOpen) list.hidePopover()
+        return list.matches(':popover-open')
     }
 
     #optionId (index:number):string {

@@ -9,12 +9,19 @@ const ACTORS:Actor[] = [
 
 let requests:URL[] = []
 
-window.fetch = async (input:RequestInfo|URL) => {
+async function fakeFetch (input:RequestInfo|URL):Promise<Response> {
     requests.push(new URL(String(input)))
     return new Response(JSON.stringify({ actors: ACTORS }))
 }
 
+window.fetch = fakeFetch
+
 const OPTION = 'actor-typeahead [role="option"]'
+
+function isOpen (el:ActorTypeahead):boolean {
+    const list = el.querySelector('[role="listbox"]')
+    return !!list && list.matches(':popover-open')
+}
 
 function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
     return el.querySelectorAll('[role="option"]')
@@ -157,6 +164,26 @@ test('two instances have distinct ids', async t => {
     t.ok(ids.every(Boolean), 'every element has an id')
     t.equal(new Set(ids).size, ids.length, 'ids are unique')
 })
+
+test('the Suggestion list is open exactly when it has Suggestions',
+    async t => {
+        const { el, input } = await setup()
+        t.equal(isOpen(el), false, 'closed before typing')
+
+        type(input, 'ali')
+        await waitFor(OPTION)
+        t.equal(isOpen(el), true, 'open with Suggestions')
+
+        window.fetch = async () => {
+            return new Response(JSON.stringify({ actors: [] }))
+        }
+        type(input, 'zzz')
+        await waitFor(null, null, () => {
+            return results(el).length === 0 ? el : null
+        })
+        window.fetch = fakeFetch
+        t.equal(isOpen(el), false, 'closed with no Suggestions')
+    })
 
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
