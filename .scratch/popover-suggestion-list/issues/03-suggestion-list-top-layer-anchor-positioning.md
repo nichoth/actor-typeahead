@@ -45,16 +45,16 @@ show/hide, feature detection), `src/index.css` (`actor-typeahead` anchor
 name and `anchor-scope`, `.suggestion-list` positioning and fallback),
 `test/index.ts`, `example/index.html`, `example/index.ts`, `AGENTS.md`
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Suggestion list matches `:popover-open` exactly when there is
+- [x] The Suggestion list matches `:popover-open` exactly when there is
       at least one Suggestion
-- [ ] The Suggestion list stops matching `:popover-open` after Escape,
+- [x] The Suggestion list stops matching `:popover-open` after Escape,
       after keyboard selection, after pointer selection, and after the
       input is emptied
-- [ ] Rendering twice while open, or clearing twice while closed, does
+- [x] Rendering twice while open, or clearing twice while closed, does
       not throw
-- [ ] The input's `aria-expanded` matches whether the Suggestion list is
+- [x] The input's `aria-expanded` matches whether the Suggestion list is
       `:popover-open`
 - [x] Existing keyboard, pointer, Escape and no-form-submission tests
       still pass
