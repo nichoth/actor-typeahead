@@ -208,6 +208,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         if (!this.#suggestionList) {
             this.#suggestionList = document.createElement('ul')
             this.#suggestionList.className = 'suggestion-list'
+            this.#suggestionList.setAttribute('role', 'listbox')
             this.#suggestionList.addEventListener('pointerdown', this)
             this.#suggestionList.addEventListener('pointerup', this)
         }

@@ -108,6 +108,11 @@ test('Escape closes the menu', async t => {
 
 test('select with the pointer', async t => {
     const { el, input } = await setup()
+    let selected:Actor|null = null
+    el.on<CustomEvent<Actor>>('select', ev => {
+        selected = ev.detail
+    })
+
     type(input, 'ali')
     await waitFor(OPTION)
 
@@ -116,7 +121,23 @@ test('select with the pointer', async t => {
     option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
 
     t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
+    t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
     t.equal(results(el).length, 0, 'should close the menu')
+})
+
+test('pointerup off a Suggestion refocuses the input', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    // a real press moves focus off the input between down and up
+    const list = el.querySelector('[role="listbox"]')!
+    list.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    input.blur()
+    list.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+
+    t.equal(document.activeElement, input, 'should focus the input')
+    t.equal(results(el).length, ACTORS.length, 'should stay open')
 })
 
 test('clicking a result does not submit a form', async t => {
