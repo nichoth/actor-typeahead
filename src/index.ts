@@ -221,6 +221,12 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         const list = this.#suggestionList
         if (list.parentNode !== this) this.append(list)
 
+        list.replaceChildren(...this.#actors.map((actor, i) => {
+            const option = suggestion(actor, i, i === this.#index)
+            option.id = this.#optionId(i)
+            return option
+        }))
+
         const input = this.qs('input')
         if (input) {
             input.setAttribute('role', 'combobox')
@@ -230,11 +236,20 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 'aria-expanded',
                 String(this.#actors.length > 0)
             )
-        }
 
-        list.replaceChildren(...this.#actors.map((actor, i) => {
-            return suggestion(actor, i, i === this.#index)
-        }))
+            if (this.#actors[this.#index]) {
+                input.setAttribute(
+                    'aria-activedescendant',
+                    this.#optionId(this.#index)
+                )
+            } else {
+                input.removeAttribute('aria-activedescendant')
+            }
+        }
+    }
+
+    #optionId (index:number):string {
+        return `${this.#id}-option-${index}`
     }
 }
 

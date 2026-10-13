@@ -1,4 +1,4 @@
-import { test } from '@substrate-system/tapzero'
+import { test, type Test } from '@substrate-system/tapzero'
 import { waitFor } from '@substrate-system/dom'
 import { ActorTypeahead, type Actor } from '../src/index.js'
 
@@ -67,6 +67,28 @@ test('aria-expanded follows the Suggestions', async t => {
     await waitFor(OPTION)
     type(input, '')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'empty closes')
+})
+
+test('aria-activedescendant tracks the highlighted option', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'nothing highlighted before arrow keys'
+    )
+
+    key(input, 'ArrowDown')
+    key(input, 'ArrowDown')
+    checkActive(t, el, input, 1)
+    key(input, 'ArrowUp')
+    checkActive(t, el, input, 0)
+
+    key(input, 'Escape')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'removed once closed'
+    )
 })
 
 test('typing queries the typeahead API', async t => {
@@ -219,6 +241,28 @@ async function setup (attrs = ''):Promise<{
     // const el = document.querySelector('actor-typeahead')!
     const input = el.querySelector('input')!
     return { el, input }
+}
+
+function checkActive (
+    t:Test,
+    el:ActorTypeahead,
+    input:HTMLInputElement,
+    index:number
+) {
+    const id = input.getAttribute('aria-activedescendant')
+    const options = [...results(el)]
+    const selected = options.filter(option => {
+        return option.getAttribute('aria-selected') === 'true'
+    })
+
+    t.ok(id, 'should have aria-activedescendant')
+    t.equal(selected.length, 1, 'exactly one option is selected')
+    t.equal(selected[0], options[index], 'the expected option is selected')
+    t.equal(
+        id && document.getElementById(id),
+        selected[0],
+        'aria-activedescendant references the selected option'
+    )
 }
 
 function type (input:HTMLInputElement, value:string) {
