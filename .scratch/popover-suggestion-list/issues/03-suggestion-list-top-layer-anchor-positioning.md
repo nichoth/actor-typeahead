@@ -56,5 +56,5 @@ name and `anchor-scope`, `.suggestion-list` positioning and fallback),
       not throw
 - [ ] The input's `aria-expanded` matches whether the Suggestion list is
       `:popover-open`
-- [ ] Existing keyboard, pointer, Escape and no-form-submission tests
+- [x] Existing keyboard, pointer, Escape and no-form-submission tests
       still pass
