@@ -133,6 +133,31 @@ test('the listbox is labelled by the input\'s label', async t => {
     )
 })
 
+test('two instances have distinct ids', async t => {
+    requests = []
+    document.body.innerHTML = `
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>`
+    await waitFor(ActorTypeahead.TAG)
+    const els = [...document.querySelectorAll(ActorTypeahead.TAG)]
+
+    for (const el of els) {
+        type(el.querySelector('input')!, 'ali')
+    }
+    await waitFor(null, null, () => {
+        const ready = els.every(el => results(el).length === ACTORS.length)
+        return ready ? els[0] : null
+    })
+
+    const ids = els.flatMap(el => {
+        return [...el.querySelectorAll('[role="listbox"], [role="option"]')]
+            .map(node => node.id)
+    })
+    t.equal(ids.length, 2 * (1 + ACTORS.length), 'every element is counted')
+    t.ok(ids.every(Boolean), 'every element has an id')
+    t.equal(new Set(ids).size, ids.length, 'ids are unique')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
