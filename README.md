@@ -153,19 +153,25 @@ of it. The Suggestion list markup is:
 
 ```html
 <actor-typeahead>
-    <input>  <!-- yours, never replaced -->
-    <ul class="suggestion-list">
-        <li>
-            <button class="suggestion" type="button" data-active="true">
-                <div class="avatar"><img class="img"></div>
-                <span class="handle"></span>
-            </button>
+    <!-- yours, never replaced; the component adds the ARIA attributes -->
+    <input role="combobox" aria-autocomplete="list" aria-expanded="true"
+        aria-controls="actor-typeahead-1-list"
+        aria-activedescendant="actor-typeahead-1-option-0">
+    <ul class="suggestion-list" id="actor-typeahead-1-list"
+        role="listbox">
+        <li class="suggestion" id="actor-typeahead-1-option-0"
+            role="option" aria-selected="true">
+            <div class="avatar"><img class="img" alt=""></div>
+            <span class="handle"></span>
         </li>
     </ul>
 </actor-typeahead>
 ```
 
-`data-active="true"` marks the Suggestion selected with the keyboard.
+`aria-selected="true"` marks the Suggestion highlighted with the
+keyboard. The input also gets `autocomplete="off"` unless you set
+`autocomplete` yourself. If the input has a `<label>` with an `id`, the
+Suggestion list is labelled by it.
 
 ### Avoid a flash of undefined content
 
