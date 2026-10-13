@@ -212,6 +212,32 @@ test('the Suggestion list closes', async t => {
     t.equal(isOpen(el), false, 'after the input is emptied')
 })
 
+test('repeated renders and clears do not throw', async t => {
+    const { el, input } = await setup()
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    let error:unknown = null
+    try {
+        el.render()
+        el.render()
+    } catch (err) {
+        error = err
+    }
+    t.equal(error, null, 'rendering twice while open')
+    t.equal(isOpen(el), true, 'still open')
+
+    try {
+        key(input, 'Escape')
+        key(input, 'Escape')
+        el.render()
+    } catch (err) {
+        error = err
+    }
+    t.equal(error, null, 'clearing twice while closed')
+    t.equal(isOpen(el), false, 'still closed')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
