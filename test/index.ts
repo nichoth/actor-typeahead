@@ -185,6 +185,33 @@ test('the Suggestion list is open exactly when it has Suggestions',
         t.equal(isOpen(el), false, 'closed with no Suggestions')
     })
 
+test('the Suggestion list closes', async t => {
+    const { el, input } = await setup()
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'Escape')
+    t.equal(isOpen(el), false, 'after Escape')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    key(input, 'Enter')
+    t.equal(isOpen(el), false, 'after keyboard selection')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    const option = results(el)[0]
+    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    t.equal(isOpen(el), false, 'after pointer selection')
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    type(input, '')
+    t.equal(isOpen(el), false, 'after the input is emptied')
+})
+
 test('typing queries the typeahead API', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
