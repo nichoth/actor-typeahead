@@ -31,6 +31,11 @@ Single-context layout. See `docs/agents/domain.md`.
 * Tests locate Suggestions with `[role="option"]` and the Suggestion
   list with `[role="listbox"]`, not with class names. tapzero's `Test`
   has `ok`, `equal`, `deepEqual`, `notEqual` but no `notOk`.
+* `waitFor` from `@substrate-system/dom` only sees nodes in the
+  document; for a detached element, poll with a short sleep instead.
+* Synthetic `keydown` events never trigger implicit form submission. To
+  test that Enter does not submit, call `form.requestSubmit()` when the
+  dispatched keydown was not canceled.
 
 ## Browser support
 

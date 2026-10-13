@@ -383,27 +383,33 @@ test('pointerup off a Suggestion refocuses the input', async t => {
     t.equal(results(el).length, ACTORS.length, 'should stay open')
 })
 
-test('clicking a result does not submit a form', async t => {
-    requests = []
-    document.body.innerHTML = `<form>
-        <actor-typeahead><input></actor-typeahead>
-    </form>`
+test('Enter in the open Suggestion list does not submit a form',
+    async t => {
+        requests = []
+        document.body.innerHTML = `<form>
+            <actor-typeahead><input></actor-typeahead>
+        </form>`
 
-    await waitFor('actor-typeahead')
-    const form = document.querySelector('form')!
-    const input = form.querySelector('input')!
-    let submits = 0
-    form.addEventListener('submit', ev => {
-        ev.preventDefault()
-        submits++
+        await waitFor('actor-typeahead')
+        const form = document.querySelector('form')!
+        const input = form.querySelector('input')!
+        let submits = 0
+        form.addEventListener('submit', ev => {
+            ev.preventDefault()
+            submits++
+        })
+
+        type(input, 'ali')
+        await waitFor(OPTION)
+        key(input, 'ArrowDown')
+
+        // a synthetic keydown does not submit, so do what the browser
+        // does: submit implicitly unless the keydown was canceled
+        if (key(input, 'Enter')) form.requestSubmit()
+
+        t.equal(submits, 0, 'should not submit')
+        t.equal(input.value, ACTORS[0].handle, 'should select instead')
     })
-
-    type(input, 'ali')
-    const option = await waitFor(OPTION)
-    option!.click()
-
-    t.equal(submits, 0, 'should not submit')
-})
 
 test('all done', () => {
     document.body.innerHTML = ''
@@ -469,8 +475,11 @@ function type (input:HTMLInputElement, value:string) {
     input.dispatchEvent(new InputEvent('input', { bubbles: true }))
 }
 
-function key (input:HTMLInputElement, name:string) {
-    input.dispatchEvent(new KeyboardEvent('keydown', {
+/**
+ * Dispatch a keydown. Returns false if a listener canceled it.
+ */
+function key (input:HTMLInputElement, name:string):boolean {
+    return input.dispatchEvent(new KeyboardEvent('keydown', {
         key: name,
         bubbles: true,
         cancelable: true
