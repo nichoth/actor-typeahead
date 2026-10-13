@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="reduce-fouce">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>actor-typeahead</title>
+
+    <!--
+      Page level FOUCE guard. Inline, not linked, because it has to
+      apply before the first paint.
+    -->
+    <style>
+        html.reduce-fouce { opacity: 0; }
+    </style>
+
+    <!-- Without JS the components never define, so reveal the page. -->
+    <noscript>
+        <style>
+            html.reduce-fouce { opacity: 1 !important; }
+        </style>
+    </noscript>
+</head>
+<body>
+    <label for="handle">Handle</label>
+    <div style="width: min-content">
+        <actor-typeahead>
+            <input id="handle" autocomplete="off">
+        </actor-typeahead>
+    </div>
+
+    <p>Selected: <output id="selected"></output></p>
+
+    <!--
+      Manual checks for the anchored Suggestion list: it should escape
+      this clipping container, and the one at the bottom of the page
+      should open above its input.
+    -->
+    <h2>Inside an <code>overflow: hidden</code> container</h2>
+    <div style="overflow: hidden; height: 4rem; width: min-content">
+        <label for="clipped">Handle</label>
+        <actor-typeahead>
+            <input id="clipped">
+        </actor-typeahead>
+    </div>
+
+    <h2>Near the bottom of the viewport</h2>
+    <div style="height: 100vh"></div>
+    <label for="bottom">Handle</label>
+    <div style="width: min-content">
+        <actor-typeahead>
+            <input id="bottom">
+        </actor-typeahead>
+    </div>
+
+    <script type="module" src="./index.ts"></script>
+</body>
+</html>
