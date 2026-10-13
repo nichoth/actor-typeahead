@@ -27,22 +27,25 @@ const DEFAULT_ROWS = 5
 /**
  * @attribute {string} [host] - The host to which to make the typeahead
  * API call.
- * @attribute {number} [rows] - The maximum number of rows to display in
- * the dropdown.
+ * @attribute {number} [rows] - The maximum number of Suggestions to
+ * display in the Suggestion list.
  *
- * @fires actor-typeahead:select - A user was chosen from the menu. The
- * event `detail` is `{ handle, avatar }`.
+ * @fires actor-typeahead:select - A Suggestion was chosen from the
+ * Suggestion list. The event `detail` is `{ handle, avatar }`.
  *
- * @cssprop --color-background - Controls the color of the dropdown
+ * @cssprop --color-background - Controls the color of the Suggestion list
  * background.
- * @cssprop --color-border - Controls the color of the dropdown border.
- * @cssprop --color-shadow - Controls the color of the dropdown shadow.
- * @cssprop --color-hover - Controls the background color of each row on
- * hover.
+ * @cssprop --color-border - Controls the color of the Suggestion list
+ * border.
+ * @cssprop --color-shadow - Controls the color of the Suggestion list
+ * shadow.
+ * @cssprop --color-hover - Controls the background color of each
+ * Suggestion on hover.
  * @cssprop --color-avatar-fallback - Controls the background color of an
  * avatar circle if the image fails to load.
- * @cssprop --radius - Controls the corner radius of the dropdown.
- * @cssprop --padding-menu - Controls the padding of the dropdown menu.
+ * @cssprop --radius - Controls the corner radius of the Suggestion list.
+ * @cssprop --padding-suggestion-list - Controls the padding of the
+ * Suggestion list.
  *
  * @summary A small web component that progressively enhances an <input>
  * element into an autocomplete for ATProto handles.
@@ -58,7 +61,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #actors:Actor[] = []
     #index = -1
     #pressed = false
-    #menu:HTMLUListElement|null = null
+    #suggestionList:HTMLUListElement|null = null
 
     constructor () {
         super()
@@ -197,22 +200,23 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     }
 
     /**
-     * Render into light DOM, next to the authored `<input>`. Only the menu
-     * is rebuilt, so the input element, and anything the consumer
-     * attached to it, is never replaced.
+     * Render into light DOM, next to the authored `<input>`. Only the
+     * Suggestion list is rebuilt, so the input element, and anything the
+     * consumer attached to it, is never replaced.
      */
     render () {
-        if (!this.#menu) {
-            this.#menu = document.createElement('ul')
-            this.#menu.className = 'menu'
-            this.#menu.addEventListener('pointerdown', this)
-            this.#menu.addEventListener('pointerup', this)
+        if (!this.#suggestionList) {
+            this.#suggestionList = document.createElement('ul')
+            this.#suggestionList.className = 'suggestion-list'
+            this.#suggestionList.addEventListener('pointerdown', this)
+            this.#suggestionList.addEventListener('pointerup', this)
         }
 
-        if (this.#menu.parentNode !== this) this.append(this.#menu)
+        const list = this.#suggestionList
+        if (list.parentNode !== this) this.append(list)
 
-        this.#menu.replaceChildren(...this.#actors.map((actor, i) => {
-            return row(actor, i, i === this.#index)
+        list.replaceChildren(...this.#actors.map((actor, i) => {
+            return suggestion(actor, i, i === this.#index)
         }))
     }
 }
@@ -220,16 +224,20 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 ActorTypeahead.define()
 
 /**
- * Build one menu row. Values from the API go through `textContent` and
+ * Build one Suggestion. Values from the API go through `textContent` and
  * properties, never through `innerHTML`.
  */
-function row (actor:Actor, index:number, active:boolean):HTMLLIElement {
+function suggestion (
+    actor:Actor,
+    index:number,
+    active:boolean
+):HTMLLIElement {
     const li = document.createElement('li')
 
     // `type="button"` so a click does not submit a surrounding form
     const button = document.createElement('button')
     button.type = 'button'
-    button.className = 'user'
+    button.className = 'suggestion'
     button.dataset.index = String(index)
     button.dataset.handle = actor.handle
     if (active) button.dataset.active = 'true'

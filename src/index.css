@@ -5,23 +5,29 @@ actor-typeahead {
     --color-hover-inherited: var(--color-hover, #0001);
     --color-avatar-fallback-inherited: var(--color-avatar-fallback, #0002);
     --radius-inherited: var(--radius, 8px);
-    --padding-menu-inherited: var(--padding-menu, 4px);
+    --padding-suggestion-list-inherited: var(
+        --padding-suggestion-list,
+        4px
+    );
 
     display: block;
     position: relative;
     font-family: system-ui;
 
-    /* Scoped to the menu, so the authored <input> keeps its own styles */
-    & .menu,
-    & .menu *,
-    & .menu *::before,
-    & .menu *::after {
+    /*
+     * Scoped to the Suggestion list, so the authored <input> keeps its own
+     * styles
+     */
+    & .suggestion-list,
+    & .suggestion-list *,
+    & .suggestion-list *::before,
+    & .suggestion-list *::after {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
     }
 
-    & .menu {
+    & .suggestion-list {
         display: flex;
         flex-direction: column;
         position: absolute;
@@ -36,14 +42,14 @@ actor-typeahead {
         border-radius: var(--radius-inherited);
         box-shadow: 0 6px 6px -4px
             rgb(from var(--color-shadow-inherited) r g b / 20%);
-        padding: var(--padding-menu-inherited);
+        padding: var(--padding-suggestion-list-inherited);
 
         &:empty {
             display: none;
         }
     }
 
-    & .user {
+    & .suggestion {
         all: unset;
         box-sizing: border-box;
         display: flex;
@@ -53,7 +59,8 @@ actor-typeahead {
         width: 100%;
         height: calc(1.5rem + 6px * 2);
         border-radius: calc(
-            var(--radius-inherited) - var(--padding-menu-inherited)
+            var(--radius-inherited) -
+            var(--padding-suggestion-list-inherited)
         );
         cursor: default;
 

@@ -32,7 +32,7 @@ rewritten in TypeScript to render into light DOM. See
 - [CSS](#css)
   * [Import CSS](#import-css)
   * [Customize CSS via some variables](#customize-css-via-some-variables)
-  * [Style the menu directly](#style-the-menu-directly)
+  * [Style the Suggestion list directly](#style-the-suggestion-list-directly)
   * [Avoid a flash of undefined content](#avoid-a-flash-of-undefined-content)
   * [pre-built](#pre-built)
 - [Differences from upstream](#differences-from-upstream)
@@ -64,9 +64,9 @@ import '@substrate-system/actor-typeahead'
 import '@substrate-system/actor-typeahead/css'
 ```
 
-Typing in the input shows a menu of matching accounts. Choosing one, with
-the arrow keys and Enter or with the pointer, fills in the input with the
-account's handle.
+Typing in the input shows a Suggestion list of matching accounts.
+Choosing one, with the arrow keys and Enter or with the pointer, fills in
+the input with the account's handle.
 
 ## API
 
@@ -142,21 +142,21 @@ actor-typeahead {
     --color-hover: #0001;
     --color-avatar-fallback: #0002;
     --radius: 8px;
-    --padding-menu: 4px;
+    --padding-suggestion-list: 4px;
 }
 ```
 
-### Style the menu directly
+### Style the Suggestion list directly
 
 The component renders into light DOM, so ordinary CSS reaches every part
-of it. The menu markup is:
+of it. The Suggestion list markup is:
 
 ```html
 <actor-typeahead>
     <input>  <!-- yours, never replaced -->
-    <ul class="menu">
+    <ul class="suggestion-list">
         <li>
-            <button class="user" type="button" data-active="true">
+            <button class="suggestion" type="button" data-active="true">
                 <div class="avatar"><img class="img"></div>
                 <span class="handle"></span>
             </button>
@@ -165,7 +165,7 @@ of it. The menu markup is:
 </actor-typeahead>
 ```
 
-`data-active="true"` marks the row selected with the keyboard.
+`data-active="true"` marks the Suggestion selected with the keyboard.
 
 ### Avoid a flash of undefined content
 
