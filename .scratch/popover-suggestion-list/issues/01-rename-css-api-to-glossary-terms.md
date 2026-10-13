@@ -22,7 +22,7 @@ the `row()` helper and its doc comment), `src/index.css` (`.menu`,
 (CSS variables block, "Style the menu directly" section and its TOC
 entry), generated custom elements manifest via `npm run build-manifest`
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] The existing browser test suite passes unchanged
 - [x] No source, stylesheet or README reference to `.menu`, `.user` or
