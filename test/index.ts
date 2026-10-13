@@ -55,25 +55,30 @@ test('the input is a combobox that controls the listbox', async t => {
 })
 
 test('aria-expanded follows the Suggestions', async t => {
-    const { input } = await setup()
+    const { el, input } = await setup()
     t.equal(input.getAttribute('aria-expanded'), 'false', 'starts closed')
 
     type(input, 'ali')
     await waitFor(OPTION)
     t.equal(input.getAttribute('aria-expanded'), 'true', 'open with results')
+    checkExpanded(t, el, input)
     key(input, 'Escape')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'Escape closes')
+    checkExpanded(t, el, input)
 
     type(input, 'ali')
     await waitFor(OPTION)
     key(input, 'ArrowDown')
+    checkExpanded(t, el, input)
     key(input, 'Enter')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'select closes')
+    checkExpanded(t, el, input)
 
     type(input, 'ali')
     await waitFor(OPTION)
     type(input, '')
     t.equal(input.getAttribute('aria-expanded'), 'false', 'empty closes')
+    checkExpanded(t, el, input)
 })
 
 test('aria-activedescendant tracks the highlighted option', async t => {
@@ -409,6 +414,18 @@ function checkActive (
         id && document.getElementById(id),
         selected[0],
         'aria-activedescendant references the selected option'
+    )
+}
+
+function checkExpanded (
+    t:Test,
+    el:ActorTypeahead,
+    input:HTMLInputElement
+) {
+    t.equal(
+        input.getAttribute('aria-expanded'),
+        String(isOpen(el)),
+        'aria-expanded matches the popover open state'
     )
 }
 
