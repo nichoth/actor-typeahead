@@ -24,10 +24,10 @@ entry), generated custom elements manifest via `npm run build-manifest`
 
 **Status:** ready-for-agent
 
-- [ ] The existing browser test suite passes unchanged
-- [ ] No source, stylesheet or README reference to `.menu`, `.user` or
+- [x] The existing browser test suite passes unchanged
+- [x] No source, stylesheet or README reference to `.menu`, `.user` or
       `--padding-menu` remains
-- [ ] `npm run lint`, `stylelint src/*.css` and `npm run build` succeed,
+- [x] `npm run lint`, `stylelint src/*.css` and `npm run build` succeed,
       and the built manifest lists `--padding-suggestion-list`
 
 Note: these criteria are verified by the existing suite and the build,
