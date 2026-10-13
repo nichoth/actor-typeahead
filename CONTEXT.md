@@ -3,21 +3,6 @@
 An input enhancement that suggests ATProto accounts as the user types a
 handle.
 
-## Language
-
-**Actor**:
-An ATProto account, as returned by the typeahead search.
-_Avoid_: User, account, profile
-
-**Handle**:
-The human-readable, domain-style identifier of an Actor.
-_Avoid_: Username, name
-
-**Suggestion**:
-One Actor offered as a possible completion for the current query.
-_Avoid_: Row, result, item, user
-
-**Suggestion list**:
-The set of Suggestions shown for the current query, presented beneath
-the input.
-_Avoid_: Menu, dropdown, results
+The domain vocabulary (Actor, Handle, Suggestion, Suggestion list, and
+the rest) lives in [`docs/GLOSSARY.md`](docs/GLOSSARY.md). Add and
+change terms there, not here.
