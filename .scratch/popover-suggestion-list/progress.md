@@ -10,5 +10,8 @@ Started: 2026-10-13T19:35:07.009Z
   branch: actor-typeahead--popover-suggestion-list-02-suggestion-list-as-aria-combobox
   exit: 0
   completed: 2026-10-13T19:40:53.301Z
-- [ ] 03-suggestion-list-top-layer-anchor-positioning.md
+- [x] 03-suggestion-list-top-layer-anchor-positioning.md
+  branch: actor-typeahead--popover-suggestion-list-03-suggestion-list-top-layer-anchor-positioning
+  exit: 0
+  completed: 2026-10-13T19:45:00.826Z
 - [ ] 04-announce-suggestion-count.md
