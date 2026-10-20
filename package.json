@@ -44,7 +44,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@substrate-system/web-component": "^0.0.60"
+    "@substrate-system/web-component": "^0.0.61"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.11.0",
@@ -62,10 +62,10 @@
     "lightningcss": "^1.30.2",
     "lightningcss-cli": "^1.33.0",
     "markdown-toc": "^1.2.0",
-    "nightralph": "^0.0.56",
+    "nightralph": "^0.1.1",
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
-    "typescript": "^6.0.2",
+    "typescript": "^7.0.2",
     "vite": "^8.0.5"
   },
   "repository": {
