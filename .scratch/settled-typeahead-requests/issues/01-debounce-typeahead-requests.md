@@ -18,7 +18,7 @@ The debounce changes the timing of two existing tests:
 - "an empty input clears without a request" must wait past
   `DEBOUNCE_MS` before asserting, or it passes vacuously.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** None
 
@@ -28,13 +28,13 @@ The debounce changes the timing of two existing tests:
 `docs/architecture/external-api.md`,
 `docs/architecture/runtime-state.md`, `docs/GLOSSARY.md`
 
-- [ ] Typing `a`, `al`, `ali` in quick succession sends exactly one
+- [x] Typing `a`, `al`, `ali` in quick succession sends exactly one
       Typeahead request, with `q=ali`
-- [ ] Typing, then emptying the input before the debounce elapses,
+- [x] Typing, then emptying the input before the debounce elapses,
       sends no request and leaves the Suggestion list closed
-- [ ] Typing, then pressing Escape before the debounce elapses, sends
+- [x] Typing, then pressing Escape before the debounce elapses, sends
       no request
-- [ ] Typing, then removing the Host element before the debounce
+- [x] Typing, then removing the Host element before the debounce
       elapses, sends no request
-- [ ] Existing request-shape tests (host, rows, `q`, `limit`) still
+- [x] Existing request-shape tests (host, rows, `q`, `limit`) still
       pass
