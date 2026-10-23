@@ -56,6 +56,7 @@ kept from each actor. Anything else in the body is ignored.
 | Network failure | `fetch` rejects. Same as above |
 | Responses arrive out of order | The older request was aborted when the newer Query arrived, so its response is dropped |
 | Response arrives after the Query was emptied, Escape, Selection, `focusout` or removal | The request was aborted, so the response is dropped and the Suggestion list stays closed |
+| Response arrives after Enter with nothing Highlighted (a form submit) | The request was aborted, so the response is dropped. The Suggestion list keeps what it showed |
 | Request aborted | `fetch` rejects with an `AbortError`, which is caught. No unhandled rejection |
 
 No failure surfaces as an unhandled rejection, fires an event or logs.

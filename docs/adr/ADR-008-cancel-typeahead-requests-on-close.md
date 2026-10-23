@@ -18,8 +18,9 @@ reopened the Suggestion list with stale Suggestions. Debouncing
   in flight per instance.
 - One cancel path: `#cancel()` clears the debounce timer and aborts the
   in-flight request. `#clear()` calls it, so every way of closing the
-  Suggestion list cancels. A new non-empty Query and
-  `disconnectedCallback()` call it too.
+  Suggestion list cancels. A new non-empty Query,
+  `disconnectedCallback()` and Enter with nothing Highlighted (which
+  passes through to submit the form) call it too.
 - A new Query keeps the current Suggestions on screen until its own
   response arrives, so the list does not flicker while typing.
 - After each `await` (`fetch`, then `res.json()`), the handler returns

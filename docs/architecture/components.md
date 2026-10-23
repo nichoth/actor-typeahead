@@ -54,7 +54,7 @@ Escape closes a surrounding `<dialog>`.
 | ArrowUp | Highlight the previous Suggestion, stopping at the first |
 | PageDown / PageUp | Highlight the last / first Suggestion |
 | Escape | Clear the Suggestion list and cancel a pending Typeahead request. Prevented only when the Suggestion list is open |
-| Enter | Select the Highlighted Suggestion. Prevented only when one is highlighted; otherwise passed through |
+| Enter | Select the Highlighted Suggestion. Prevented only when one is highlighted; otherwise passed through, and a pending Typeahead request is cancelled while the Suggestions stay |
 
 ## Pointer and focus
 

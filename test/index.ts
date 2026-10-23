@@ -762,6 +762,39 @@ test('Enter with no Highlighted Suggestion submits a form',
         t.equal(isOpen(el), true, 'should stay open')
     })
 
+test('Enter that submits before the debounce sends no request',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+
+        if (key(input, 'Enter')) input.form!.requestSubmit()
+        await sleep(DEBOUNCE)
+
+        t.equal(submits(), 1, 'should submit once')
+        t.equal(requests.length, 0, 'should not make a request')
+        t.equal(isOpen(el), false, 'should stay closed')
+    })
+
+test('Enter that submits drops the response in flight', async t => {
+    const { el, input, submits } = await formSetup()
+    const calls = deferredFetch()
+    const stop = rejections()
+
+    type(input, 'ali')
+    const call = await requestFor(calls, 'ali')
+    if (key(input, 'Enter')) input.form!.requestSubmit()
+    respond(call, ACTORS)
+    await sleep(50)
+
+    const errors = await stop()
+    window.fetch = fakeFetch
+    t.equal(submits(), 1, 'should submit once')
+    t.equal(call.signal?.aborted, true, 'should abort the request')
+    t.equal(results(el).length, 0, 'should render no Suggestions')
+    t.equal(isOpen(el), false, 'should stay closed')
+    t.equal(errors.length, 0, 'should not reject')
+})
+
 test('Escape with the Suggestion list closed is not canceled',
     async t => {
         const { el, input } = await setup()
