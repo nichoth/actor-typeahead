@@ -201,7 +201,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         } catch (err) {
             // a newer Query, or a close, cancelled this request
             if (isAbortError(err)) return
-            throw err
+            // any other failure closes the Suggestion list, quietly
+            this.#clear()
+            return
         }
         if (signal.aborted) return
 
