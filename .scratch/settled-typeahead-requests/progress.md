@@ -2,7 +2,10 @@
 
 Started: 2026-10-23T04:55:14.798Z
 
-- [ ] 01-debounce-typeahead-requests.md
+- [x] 01-debounce-typeahead-requests.md
+  branch: actor-typeahead--settled-typeahead-requests-01-debounce-typeahead-requests
+  exit: 0
+  completed: 2026-10-23T04:59:09.320Z
 - [ ] 02-abort-stale-typeahead-requests.md
 - [ ] 03-handle-failed-typeahead-requests.md
 - [ ] 04-keys-pass-through-when-closed.md
