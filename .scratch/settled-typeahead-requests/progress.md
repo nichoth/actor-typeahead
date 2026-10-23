@@ -10,7 +10,10 @@ Started: 2026-10-23T04:55:14.798Z
   branch: actor-typeahead--settled-typeahead-requests-02-abort-stale-typeahead-requests
   exit: 0
   completed: 2026-10-23T05:05:04.891Z
-- [ ] 03-handle-failed-typeahead-requests.md
+- [x] 03-handle-failed-typeahead-requests.md
+  branch: actor-typeahead--settled-typeahead-requests-03-handle-failed-typeahead-requests
+  exit: 0
+  completed: 2026-10-23T05:10:46.704Z
 - [x] 04-keys-pass-through-when-closed.md
   branch: actor-typeahead--settled-typeahead-requests-04-keys-pass-through-when-closed
   exit: 0
