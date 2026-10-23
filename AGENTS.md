@@ -40,6 +40,11 @@ Single-context layout. See `docs/agents/domain.md`.
   with a Highlighted Suggestion, Escape with the Suggestion list open),
   so forms and `<dialog>`s keep working. Tests check this through the
   return value of the `key()` helper in `test/index.ts`.
+* Every action that ends typing must call `#cancel()` (directly or via
+  `#clear()`), including keys passed through to the page, like Enter
+  with nothing Highlighted. Otherwise a late response reopens the
+  Suggestion list. A new close path needs a test for both a pending
+  debounce and a request in flight.
 * Typeahead requests are debounced (`DEBOUNCE_MS` in `src/index.ts`).
   `type()` then `waitFor(OPTION)` still works, but a test asserting
   that no request was sent must first sleep past the debounce (the
