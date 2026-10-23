@@ -664,6 +664,13 @@ test('Enter with no Highlighted Suggestion submits a form',
         t.equal(isOpen(el), true, 'should stay open')
     })
 
+test('Escape with the Suggestion list closed is not canceled',
+    async t => {
+        const { el, input } = await setup()
+        t.equal(key(input, 'Escape'), true, 'should not cancel')
+        t.equal(isOpen(el), false, 'should stay closed')
+    })
+
 test('all done', () => {
     document.body.innerHTML = ''
     // @ts-expect-error tests

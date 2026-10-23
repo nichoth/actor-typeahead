@@ -151,7 +151,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 break
 
             case 'Escape':
-                evt.preventDefault()
+                // with the list closed, let a dialog close; still cancel
+                // any pending Typeahead request
+                if (this.#actors.length) evt.preventDefault()
                 this.#clear()
                 break
 
