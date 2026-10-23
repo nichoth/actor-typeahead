@@ -76,6 +76,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #pressed = false
     #suggestionList:HTMLUListElement|null = null
     #timer:ReturnType<typeof setTimeout>|undefined
+    #controller:AbortController|null = null
 
     constructor () {
         super()
@@ -184,8 +185,22 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         url.searchParams.set('q', query)
         url.searchParams.set('limit', String(this.#limit))
 
-        const res = await fetch(url)
-        const json:unknown = await res.json()
+        const controller = new AbortController()
+        this.#controller = controller
+        const { signal } = controller
+
+        let json:unknown
+        try {
+            const res = await fetch(url, { signal })
+            if (signal.aborted) return
+            json = await res.json()
+        } catch (err) {
+            // a newer Query, or a close, cancelled this request
+            if (isAbortError(err)) return
+            throw err
+        }
+        if (signal.aborted) return
+
         this.#actors = parseActors(json)
         this.#index = -1
         this.render()
@@ -223,11 +238,14 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     }
 
     /**
-     * Stop any pending Typeahead request.
+     * Stop any pending Typeahead request: the debounce timer, and the
+     * request in flight, whose response is then dropped.
      */
     #cancel () {
         clearTimeout(this.#timer)
         this.#timer = undefined
+        this.#controller?.abort()
+        this.#controller = null
     }
 
     #clear () {
@@ -363,6 +381,10 @@ function parseActors (json:unknown):Actor[] {
             { handle: actor.handle, avatar: actor.avatar } :
             { handle: actor.handle }]
     })
+}
+
+function isAbortError (err:unknown):boolean {
+    return err instanceof DOMException && err.name === 'AbortError'
 }
 
 function isRecord (value:unknown):value is Record<string, unknown> {

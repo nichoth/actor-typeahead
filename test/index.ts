@@ -9,9 +9,88 @@ const ACTORS:Actor[] = [
 
 let requests:URL[] = []
 
-async function fakeFetch (input:RequestInfo|URL):Promise<Response> {
+async function fakeFetch (
+    input:RequestInfo|URL,
+    init?:RequestInit
+):Promise<Response> {
     requests.push(new URL(String(input)))
+    if (init?.signal?.aborted) throw abortError()
     return new Response(JSON.stringify({ actors: ACTORS }))
+}
+
+/**
+ * A request held by `deferredFetch()`, for the test to settle.
+ */
+interface Deferred {
+    q:string|null;
+    signal:AbortSignal|null;
+    resolve:(res:Response) => void;
+    reject:(err:unknown) => void;
+}
+
+/**
+ * Replace `fetch` with a stub that holds each request until the test
+ * resolves or rejects it. Like the real `fetch`, it rejects with an
+ * `AbortError` when the request's signal aborts.
+ */
+function deferredFetch ():Deferred[] {
+    const calls:Deferred[] = []
+    window.fetch = (input, init) => {
+        const url = new URL(String(input))
+        requests.push(url)
+        const signal = init?.signal ?? null
+        return new Promise((resolve, reject) => {
+            const q = url.searchParams.get('q')
+            calls.push({ q, signal, resolve, reject })
+            if (!signal) return
+            if (signal.aborted) reject(abortError())
+            signal.addEventListener('abort', () => reject(abortError()))
+        })
+    }
+    return calls
+}
+
+/**
+ * The request `deferredFetch()` holds for a Query. Polls, because the
+ * request is sent only after the debounce.
+ */
+async function requestFor (
+    calls:Deferred[],
+    q:string
+):Promise<Deferred> {
+    for (let i = 0; i < 100; i++) {
+        const call = calls.find(c => c.q === q)
+        if (call) return call
+        await sleep(10)
+    }
+    throw new Error(`no request for ${q}`)
+}
+
+function respond (call:Deferred, actors:Actor[]) {
+    call.resolve(new Response(JSON.stringify({ actors })))
+}
+
+function abortError ():DOMException {
+    return new DOMException('The operation was aborted.', 'AbortError')
+}
+
+/**
+ * Collect `unhandledrejection` events until the returned function is
+ * called, which resolves to the reasons seen.
+ */
+function rejections ():() => Promise<unknown[]> {
+    const errors:unknown[] = []
+    const onerror = (ev:PromiseRejectionEvent) => {
+        ev.preventDefault()
+        errors.push(ev.reason)
+    }
+    window.addEventListener('unhandledrejection', onerror)
+    return async () => {
+        // the rejection event is dispatched after the current task
+        await sleep(50)
+        window.removeEventListener('unhandledrejection', onerror)
+        return errors
+    }
 }
 
 window.fetch = fakeFetch
@@ -246,38 +325,26 @@ test('repeated renders and clears do not throw', async t => {
     t.equal(isOpen(el), false, 'still closed')
 })
 
-test('a response after the element is removed does not throw',
+test('removing the element aborts its in-flight request',
     async t => {
         const { el, input } = await setup()
-        let respond:((res:Response) => void)|null = null
-        window.fetch = () => new Promise(resolve => { respond = resolve })
-
-        const errors:unknown[] = []
-        const onerror = (ev:PromiseRejectionEvent) => {
-            ev.preventDefault()
-            errors.push(ev.reason)
-        }
-        window.addEventListener('unhandledrejection', onerror)
+        const calls = deferredFetch()
+        const stop = rejections()
 
         type(input, 'ali')
-        // the request is sent after the debounce
-        for (let i = 0; i < 100; i++) {
-            if (respond) break
-            await sleep(10)
-        }
+        const call = await requestFor(calls, 'ali')
         el.remove()
-        respond!(new Response(JSON.stringify({ actors: ACTORS })))
+        respond(call, ACTORS)
         // waitFor watches the document, so poll the detached element
-        for (let i = 0; i < 100; i++) {
-            if (results(el).length === ACTORS.length) break
+        for (let i = 0; i < 10; i++) {
+            if (results(el).length) break
             await sleep(10)
         }
-        // the rejection event is dispatched after the current task
-        await sleep(50)
 
-        window.removeEventListener('unhandledrejection', onerror)
+        const errors = await stop()
         window.fetch = fakeFetch
-        t.equal(results(el).length, ACTORS.length, 'should render')
+        t.equal(call.signal?.aborted, true, 'should abort the request')
+        t.equal(results(el).length, 0, 'should render no Suggestions')
         t.equal(errors.length, 0, 'should not reject')
         t.equal(isOpen(el), false, 'should not be open')
     })
@@ -311,6 +378,26 @@ test('quick typing sends one request for the settled Query',
         t.equal(requests.length, 1, 'should make one request')
         t.equal(requests[0]?.searchParams.get('q'), 'ali', 'the last Query')
         t.equal(results(el).length, ACTORS.length, 'one row per actor')
+    })
+
+test('a late response for an older Query does not replace a newer one',
+    async t => {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+        const stop = rejections()
+
+        type(input, 'al')
+        const older = await requestFor(calls, 'al')
+        type(input, 'ali')
+        const newer = await requestFor(calls, 'ali')
+        respond(newer, [ACTORS[0]])
+        await waitFor(OPTION)
+        respond(older, ACTORS)
+        await sleep(50)
+
+        await stop()
+        window.fetch = fakeFetch
+        t.equal(results(el).length, 1, 'should show the newer Suggestions')
     })
 
 test('host and rows attributes', async t => {
