@@ -24,6 +24,9 @@ export interface Actor {
 const DEFAULT_HOST = 'https://public.api.bsky.app'
 const DEFAULT_ROWS = 5
 
+// how long the Query must stay unchanged before a Typeahead request
+const DEBOUNCE_MS = 150
+
 // The Suggestion list is a top-layer popover, positioned against the host
 // with CSS anchor positioning. `anchor-scope` shipped last of that set, so
 // it gates the group. Without it, the old absolute layout is used.
@@ -72,6 +75,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #index = -1
     #pressed = false
     #suggestionList:HTMLUListElement|null = null
+    #timer:ReturnType<typeof setTimeout>|undefined
 
     constructor () {
         super()
@@ -149,7 +153,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         }
     }
 
-    async #oninput (evt:Event) {
+    #oninput (evt:Event) {
         if (!(evt.target instanceof HTMLInputElement)) return
 
         const query = evt.target.value
@@ -158,6 +162,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             return
         }
 
+        // keep the current Suggestions on screen until the new response
+        this.#cancel()
+        this.#timer = setTimeout(() => this.#request(query), DEBOUNCE_MS)
+    }
+
+    async #request (query:string) {
+        this.#timer = undefined
         const url = new URL(
             'xrpc/app.bsky.actor.searchActorsTypeahead',
             this.host ?? DEFAULT_HOST
@@ -203,7 +214,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         this.emit<Actor>('select', { detail: actor })
     }
 
+    /**
+     * Stop any pending Typeahead request.
+     */
+    #cancel () {
+        clearTimeout(this.#timer)
+        this.#timer = undefined
+    }
+
     #clear () {
+        this.#cancel()
         this.#actors = []
         this.#index = -1
         this.render()

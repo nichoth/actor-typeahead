@@ -18,6 +18,9 @@ window.fetch = fakeFetch
 
 const OPTION = 'actor-typeahead [role="option"]'
 
+// longer than DEBOUNCE_MS in src/index.ts
+const DEBOUNCE = 200
+
 function isOpen (el:ActorTypeahead):boolean {
     const list = el.querySelector('[role="listbox"]')
     return !!list && list.matches(':popover-open')
@@ -246,7 +249,7 @@ test('repeated renders and clears do not throw', async t => {
 test('a response after the element is removed does not throw',
     async t => {
         const { el, input } = await setup()
-        let respond:(res:Response) => void = () => {}
+        let respond:((res:Response) => void)|null = null
         window.fetch = () => new Promise(resolve => { respond = resolve })
 
         const errors:unknown[] = []
@@ -257,8 +260,10 @@ test('a response after the element is removed does not throw',
         window.addEventListener('unhandledrejection', onerror)
 
         type(input, 'ali')
+        // the request is sent after the debounce
+        for (let i = 0; i < 100 && !respond; i++) await sleep(10)
         el.remove()
-        respond(new Response(JSON.stringify({ actors: ACTORS })))
+        respond!(new Response(JSON.stringify({ actors: ACTORS })))
         // waitFor watches the document, so poll the detached element
         for (let i = 0; i < 100; i++) {
             if (results(el).length === ACTORS.length) break
@@ -290,6 +295,20 @@ test('typing queries the typeahead API', async t => {
     t.equal(url.searchParams.get('limit'), '5', 'default limit is 5')
     t.equal(results(el).length, ACTORS.length, 'one row per actor')
 })
+
+test('quick typing sends one request for the settled Query',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'a')
+        type(input, 'al')
+        type(input, 'ali')
+        await waitFor(OPTION)
+        await sleep(DEBOUNCE)
+
+        t.equal(requests.length, 1, 'should make one request')
+        t.equal(requests[0]?.searchParams.get('q'), 'ali', 'the last Query')
+        t.equal(results(el).length, ACTORS.length, 'one row per actor')
+    })
 
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
