@@ -395,9 +395,10 @@ test('a late response for an older Query does not replace a newer one',
         respond(older, ACTORS)
         await sleep(50)
 
-        await stop()
+        const errors = await stop()
         window.fetch = fakeFetch
         t.equal(results(el).length, 1, 'should show the newer Suggestions')
+        t.equal(errors.length, 0, 'should not reject')
     })
 
 test('starting a new request aborts the previous one', async t => {
