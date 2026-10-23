@@ -341,6 +341,16 @@ test('emptying the input before the debounce sends no request',
         t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
     })
 
+test('Escape before the debounce sends no request', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    key(input, 'Escape')
+    await sleep(DEBOUNCE)
+
+    t.equal(requests.length, 0, 'should not make a request')
+    t.equal(results(el).length, 0, 'should not show any rows')
+})
+
 test('select with the keyboard', async t => {
     const { el, input } = await setup()
     let selected:Actor|null = null
