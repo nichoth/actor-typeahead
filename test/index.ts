@@ -351,6 +351,16 @@ test('Escape before the debounce sends no request', async t => {
     t.equal(results(el).length, 0, 'should not show any rows')
 })
 
+test('removing the element before the debounce sends no request',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        el.remove()
+        await sleep(DEBOUNCE)
+
+        t.equal(requests.length, 0, 'should not make a request')
+    })
+
 test('select with the keyboard', async t => {
     const { el, input } = await setup()
     let selected:Actor|null = null

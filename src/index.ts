@@ -84,6 +84,14 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         this.addEventListener('keydown', this)
     }
 
+    /**
+     * Stop any pending Typeahead request. The Suggestion list is left as
+     * is; the next Query rebuilds it.
+     */
+    disconnectedCallback () {
+        this.#cancel()
+    }
+
     get #limit ():number {
         const rows = Number.parseInt(this.rows ?? '')
         return Number.isNaN(rows) ? DEFAULT_ROWS : rows
