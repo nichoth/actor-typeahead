@@ -62,7 +62,7 @@
     "lightningcss": "^1.30.2",
     "lightningcss-cli": "^1.33.0",
     "markdown-toc": "^1.2.0",
-    "nightralph": "^0.0.56",
+    "nightralph": "^0.1.4",
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.2",
