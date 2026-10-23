@@ -640,6 +640,17 @@ test('Enter in the open Suggestion list does not submit a form',
         t.equal(input.value, ACTORS[0].handle, 'should select instead')
     })
 
+test('Enter with the Suggestion list closed submits a form',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        input.value = ACTORS[0].handle
+
+        if (key(input, 'Enter')) input.form!.requestSubmit()
+
+        t.equal(submits(), 1, 'should submit once')
+        t.equal(isOpen(el), false, 'should stay closed')
+    })
+
 test('all done', () => {
     document.body.innerHTML = ''
     // @ts-expect-error tests
@@ -659,6 +670,29 @@ async function setup (attrs = ''):Promise<{
     // const el = document.querySelector('actor-typeahead')!
     const input = el.querySelector('input')!
     return { el, input }
+}
+
+/**
+ * Mount the element inside a `<form>`. `submits()` counts submit events.
+ */
+async function formSetup ():Promise<{
+    el:ActorTypeahead;
+    input:HTMLInputElement;
+    submits:()=>number;
+}> {
+    requests = []
+    document.body.innerHTML = `<form>
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+    </form>`
+
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const input = el.querySelector('input')!
+    let count = 0
+    input.form!.addEventListener('submit', ev => {
+        ev.preventDefault()
+        count++
+    })
+    return { el, input, submits: () => count }
 }
 
 function checkActive (

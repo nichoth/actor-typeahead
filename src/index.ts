@@ -156,6 +156,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 break
 
             case 'Enter':
+                // with nothing Highlighted, let the form submit
+                if (!this.#actors[this.#index]) break
                 evt.preventDefault()
                 this.#select(this.#index)
                 break
