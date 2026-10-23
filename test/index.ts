@@ -261,7 +261,10 @@ test('a response after the element is removed does not throw',
 
         type(input, 'ali')
         // the request is sent after the debounce
-        for (let i = 0; i < 100 && !respond; i++) await sleep(10)
+        for (let i = 0; i < 100; i++) {
+            if (respond) break
+            await sleep(10)
+        }
         el.remove()
         respond!(new Response(JSON.stringify({ actors: ACTORS })))
         // waitFor watches the document, so poll the detached element

@@ -36,6 +36,15 @@ Single-context layout. See `docs/agents/domain.md`.
 * Synthetic `keydown` events never trigger implicit form submission. To
   test that Enter does not submit, call `form.requestSubmit()` when the
   dispatched keydown was not canceled.
+* Typeahead requests are debounced (`DEBOUNCE_MS` in `src/index.ts`).
+  `type()` then `waitFor(OPTION)` still works, but a test asserting
+  that no request was sent must first sleep past the debounce (the
+  `DEBOUNCE` constant in `test/index.ts`), or it passes vacuously. A
+  stubbed `fetch` is called only after the debounce, so poll until it
+  has been called before driving its response.
+* tapout's `--timeout` covers the whole run, not one test. Each
+  debounced `type()` adds time, so raise it in the `test` script if
+  the suite grows past it ("Tests timed out").
 
 ## Browser support
 

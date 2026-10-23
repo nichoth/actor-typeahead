@@ -16,6 +16,7 @@ between instances.
 | `#index` | `number` | Position of the Highlighted Suggestion. `-1` means none | Every new response, and every reset of `#actors` |
 | `#pressed` | `boolean` | A pointer press on the Suggestion list is in progress | `pointerup` on the Suggestion list |
 | `#menu` | `HTMLUListElement \| null` | The Suggestion list element, created on first `render()` and reused | Never |
+| `#timer` | `ReturnType<typeof setTimeout> \| undefined` | The debounce timer for the next Typeahead request. `undefined` when none is pending | Its own firing, `#cancel()` (each non-empty Query, every reset of `#actors`, `disconnectedCallback()`) |
 
 `#limit` is a getter, not stored state. It parses `rows` and falls
 back to 5 when the value is not a number. Other values, including `0`

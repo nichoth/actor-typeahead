@@ -78,7 +78,8 @@ which this package forks. See
 
 **Typeahead request** -- The `GET` to
 `xrpc/app.bsky.actor.searchActorsTypeahead` on the API host, sent once
-per non-empty Query. See
+per settled Query: a non-empty Query that has not changed for 150 ms.
+See
 [ADR-005](adr/ADR-005-typeahead-responses-are-untrusted.md) and
 [external-api.md](architecture/external-api.md).
 
