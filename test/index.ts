@@ -505,13 +505,17 @@ test('a network error closes the Suggestion list quietly', async t => {
     t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
 })
 
-test('a non-2xx response renders no Suggestions', async t => {
+test('a non-2xx response closes the Suggestion list quietly', async t => {
     const { el, input } = await setup()
     const calls = deferredFetch()
     const stop = rejections()
 
+    // start open, so the failure has Suggestions to clear
     type(input, 'al')
-    const call = await requestFor(calls, 'al')
+    respond(await requestFor(calls, 'al'), ACTORS)
+    await waitFor(OPTION)
+    type(input, 'ali')
+    const call = await requestFor(calls, 'ali')
     call.resolve(new Response(JSON.stringify({ actors: ACTORS }), {
         status: 500
     }))
@@ -521,7 +525,8 @@ test('a non-2xx response renders no Suggestions', async t => {
     window.fetch = fakeFetch
     t.equal(errors.length, 0, 'should not reject')
     t.equal(results(el).length, 0, 'should show no Suggestions')
-    t.equal(isOpen(el), false, 'should stay closed')
+    t.equal(isOpen(el), false, 'should close')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
 })
 
 test('a body that is not JSON closes the Suggestion list quietly',
@@ -530,8 +535,12 @@ test('a body that is not JSON closes the Suggestion list quietly',
         const calls = deferredFetch()
         const stop = rejections()
 
+        // start open, so the failure has Suggestions to clear
         type(input, 'al')
-        const call = await requestFor(calls, 'al')
+        respond(await requestFor(calls, 'al'), ACTORS)
+        await waitFor(OPTION)
+        type(input, 'ali')
+        const call = await requestFor(calls, 'ali')
         call.resolve(new Response('<html>not json</html>'))
         await sleep(50)
 
@@ -539,7 +548,8 @@ test('a body that is not JSON closes the Suggestion list quietly',
         window.fetch = fakeFetch
         t.equal(errors.length, 0, 'should not reject')
         t.equal(results(el).length, 0, 'should show no Suggestions')
-        t.equal(isOpen(el), false, 'should stay closed')
+        t.equal(isOpen(el), false, 'should close')
+        t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
     })
 
 test('a failed request closes an open Suggestion list', async t => {
