@@ -521,7 +521,7 @@ test('emptying the input before the debounce sends no request',
 test('Escape before the debounce sends no request', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
-    key(input, 'Escape')
+    t.equal(key(input, 'Escape'), true, 'should not cancel the keydown')
     await sleep(DEBOUNCE)
 
     t.equal(requests.length, 0, 'should not make a request')
