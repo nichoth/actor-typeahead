@@ -465,6 +465,28 @@ test('a late response does not reopen a closed Suggestion list',
         }
     })
 
+test('the previous Suggestions stay while a new Query is pending',
+    async t => {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+
+        type(input, 'al')
+        respond(await requestFor(calls, 'al'), ACTORS)
+        await waitFor(OPTION)
+        type(input, 'ali')
+        const pending = await requestFor(calls, 'ali')
+
+        t.equal(results(el).length, ACTORS.length, 'should keep Suggestions')
+        t.equal(isOpen(el), true, 'should stay open')
+
+        respond(pending, [ACTORS[0]])
+        await waitFor(null, null, () => {
+            return results(el).length === 1 ? el : null
+        })
+        window.fetch = fakeFetch
+        t.equal(results(el).length, 1, 'then show the new Suggestions')
+    })
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
