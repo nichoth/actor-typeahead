@@ -651,6 +651,19 @@ test('Enter with the Suggestion list closed submits a form',
         t.equal(isOpen(el), false, 'should stay closed')
     })
 
+test('Enter with no Highlighted Suggestion submits a form',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        if (key(input, 'Enter')) input.form!.requestSubmit()
+
+        t.equal(submits(), 1, 'should submit once')
+        t.equal(input.value, 'ali', 'should not select')
+        t.equal(isOpen(el), true, 'should stay open')
+    })
+
 test('all done', () => {
     document.body.innerHTML = ''
     // @ts-expect-error tests
