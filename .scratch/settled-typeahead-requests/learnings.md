@@ -179,3 +179,55 @@ Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.13. Checked items: "While 
 - lint, stylelint, build clean; npm test 105/105.
 
 ---
+<!-- nightralph:entry ticket=settled-typeahead-requests:3 attempt=1 outcome=done -->
+## 2026-10-22 22:10 -- settled-typeahead-requests/03 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $0.90. Checked items: "A `fetch` that rejects with a network error raises no `unhandledrejection` and leaves the Suggestion list closed", "A 200 response whose body is not JSON raises no `unhandledrejection` and leaves the Suggestion list closed", "With a previous Query's Suggestions open, a failed request closes the Suggestion list", "After a failed request, the next Query renders its Suggestions normally".
+
+### Agent notes
+# Ticket 03: handle failed Typeahead requests
+
+## Item 1: network error -> no unhandledrejection, list closed
+- test "a network error closes the Suggestion list quietly": deferred
+  call rejected with TypeError('Failed to fetch'). Red: tapout
+  "Unhandled promise rejection" failed the run.
+- src/index.ts #request: catch now calls #clear() instead of rethrowing.
+
+## Item 2: non-2xx renders no Suggestions, even with an actors body
+- test "a non-2xx response renders no Suggestions": status 500 with
+  {actors: ACTORS}. Red: 2 fails (rendered both actors, open).
+- #request throws inside the try on !res.ok, so it shares the one
+  failure path (#clear) with network and JSON errors.
+
+## Item 3: 200 with a non-JSON body
+- test "a body that is not JSON closes the Suggestion list quietly".
+  Passed on arrival (item 1's catch covers res.json()). Mutation:
+  rethrowing SyntaxError from the catch -> tapout unhandled rejection.
+
+## Item 4: a failed request closes an open Suggestion list
+- test "a failed request closes an open Suggestion list": 'al'
+  Suggestions on screen, 'ali' rejects with TypeError. Passed on
+  arrival (item 1). Mutation: drop #clear() from the catch -> exactly
+  this test's 3 assertions fail. Items 1 and 3 start closed, so this is
+  the test that pins the clear.
+
+## Item 5: the next Query after a failure renders normally
+- test "the next Query after a failed request renders". Passed on
+  arrival; no state survives a failure (#clear resets everything), so
+  it is a regression guard with no natural mutation to check it.
+
+## Docs (no test-first: docs only)
+- external-api.md: non-2xx in Response handling, failure table rows
+  for HTTP error / non-JSON / network now "caught, clears, closes",
+  closing note replaced.
+- ADR-008 amended (it said ticket 03 may amend it): title now "...and
+  fail quietly", new decision bullet, consequences updated; INDEX.md
+  title row updated. runtime-state.md needed no change (failure goes
+  through #clear -> #cancel, which nulls #controller).
+- AGENTS.md: how to fail a deferred request; start with Suggestions
+  open to prove the clear.
+
+## Final gate
+- npm run lint clean, npm test 133 pass 0 fail, npm run build ok.
+
+---
