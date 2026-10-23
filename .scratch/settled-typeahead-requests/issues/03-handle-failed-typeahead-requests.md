@@ -6,7 +6,7 @@ decision. A network error, a non-2xx status or an invalid JSON body
 clears the Suggestions, which closes the Suggestion list. Ticket 02
 already returns silently on an `AbortError`; keep that path.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** 02 (extends the same `try`/`catch` in `#oninput`)
 
@@ -16,7 +16,7 @@ the ADR from ticket 02
 
 - [x] A `fetch` that rejects with a network error raises no
       `unhandledrejection` and leaves the Suggestion list closed
-- [ ] A response with a non-2xx status renders no Suggestions, even
+- [x] A response with a non-2xx status renders no Suggestions, even
       when its body contains an `actors` array
 - [x] A 200 response whose body is not JSON raises no
       `unhandledrejection` and leaves the Suggestion list closed
