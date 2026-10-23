@@ -35,12 +35,15 @@ response arrives.
 
 After `fetch` and after `res.json()`, the handler returns without
 rendering if its signal was aborted. An aborted `fetch` rejects with an
-`AbortError`, which is caught and dropped. See
+`AbortError`, which is caught and dropped. Any other failure clears the
+Suggestions, which closes the Suggestion list. See
 [ADR-008](../adr/ADR-008-cancel-typeahead-requests-on-close.md).
 
 ## Response handling
 
-The body is read with `res.json()` and narrowed by `parseActors()`.
+A response whose status is not 2xx is a failure, and its body is not
+read. Otherwise the body is read with `res.json()` and narrowed by
+`parseActors()`.
 Only `handle` (required string) and `avatar` (optional string) are
 kept from each actor. Anything else in the body is ignored.
 
@@ -48,12 +51,12 @@ kept from each actor. Anything else in the body is ignored.
 
 | Situation | Result |
 |-----------|--------|
-| HTTP error with a JSON body | `parseActors()` finds no `actors`, so the Suggestion list clears |
-| Body is not JSON | `res.json()` rejects. The rejection is unhandled, and the previous Suggestions stay |
+| HTTP error (non-2xx status) | The body is not read, even if it has `actors`. The Suggestions clear and the Suggestion list closes |
+| Body is not JSON | `res.json()` rejects. The rejection is caught, the Suggestions clear and the Suggestion list closes |
 | Network failure | `fetch` rejects. Same as above |
 | Responses arrive out of order | The older request was aborted when the newer Query arrived, so its response is dropped |
 | Response arrives after the Query was emptied, Escape, Selection, `focusout` or removal | The request was aborted, so the response is dropped and the Suggestion list stays closed |
 | Request aborted | `fetch` rejects with an `AbortError`, which is caught. No unhandled rejection |
 
-The `res.ok` status is never checked. The non-JSON and network failure
-cases above are tracked by the settled-typeahead-requests spec.
+No failure surfaces as an unhandled rejection, fires an event or logs.
+The next Query sends a new request as usual.

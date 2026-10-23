@@ -50,6 +50,11 @@ Single-context layout. See `docs/agents/domain.md`.
   and `requestFor(calls, q)` in `test/index.ts`. The stub rejects with
   an `AbortError` when the request's signal aborts, like the real
   `fetch`. Restore `window.fetch = fakeFetch` at the end of the test.
+* To fail a Typeahead request, `reject()` the deferred call with a
+  `TypeError` (network error) or `resolve()` it with a non-2xx or
+  non-JSON `Response`. A failure clears the Suggestions, so a test of
+  that must start with Suggestions open; from a closed list it only
+  proves there was no rejection.
 * tapout fails the whole run on any `unhandledrejection`, even when a
   page listener calls `preventDefault()`. A test cannot observe an
   unhandled rejection and still pass; `rejections()` only proves there
