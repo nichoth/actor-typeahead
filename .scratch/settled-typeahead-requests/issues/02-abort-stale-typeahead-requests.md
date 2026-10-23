@@ -17,7 +17,7 @@ add a deferred variant (spec, Testing Decisions). Change "a response
 after the element is removed does not throw" to assert no rejection,
 no Suggestions and a closed Suggestion list.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** 01 (shares `#oninput`, `#cancel()` and
 `disconnectedCallback()`)
@@ -28,13 +28,13 @@ removed" test), `docs/architecture/external-api.md`,
 `docs/architecture/runtime-state.md`, a new ADR in `docs/adr/` and its
 `INDEX.md` entry
 
-- [ ] When the request for an older Query resolves after the request
+- [x] When the request for an older Query resolves after the request
       for a newer one, the Suggestions shown are the newer Query's
-- [ ] Starting a new request aborts the previous request's signal
-- [ ] An aborted request raises no `unhandledrejection`
-- [ ] A response that arrives after Escape, Selection, an emptied
+- [x] Starting a new request aborts the previous request's signal
+- [x] An aborted request raises no `unhandledrejection`
+- [x] A response that arrives after Escape, Selection, an emptied
       input or focusout does not reopen the Suggestion list
-- [ ] Removing the Host element aborts its in-flight request; the late
+- [x] Removing the Host element aborts its in-flight request; the late
       response renders no Suggestions, leaves the list closed and
       raises no `unhandledrejection`
 - [x] While a new Query is pending, the previous Suggestions stay

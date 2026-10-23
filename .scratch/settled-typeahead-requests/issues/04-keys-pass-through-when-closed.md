@@ -19,7 +19,7 @@ Arrow and Page keys are unchanged. This is not in the spec's
 Implementation Decisions; it was found while designing the rebase.blog
 integration, whose follow form relies on Enter to submit.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** 01 (shares `#onkeydown` and `#clear()` with the cancel
 path; can run in parallel with 02 and 03 if the runner allows)
@@ -28,15 +28,15 @@ path; can run in parallel with 02 and 03 if the runner allows)
 `test/index.ts`, `docs/GLOSSARY.md` (**Selection** if wording changes),
 `README.md` (keyboard behavior)
 
-- [ ] In a `<form>`, Enter with the Suggestion list closed is not
+- [x] In a `<form>`, Enter with the Suggestion list closed is not
       canceled, so `form.requestSubmit()` in the test's
       implicit-submit pattern runs once (see `AGENTS.md`)
-- [ ] In a `<form>`, Enter with the Suggestion list open but no
+- [x] In a `<form>`, Enter with the Suggestion list open but no
       Highlighted Suggestion is not canceled
-- [ ] Enter with a Highlighted Suggestion is still canceled and
+- [x] Enter with a Highlighted Suggestion is still canceled and
       selects it (the existing "does not submit a form" test still
       passes)
-- [ ] Escape with the Suggestion list closed is not canceled
-- [ ] Escape with the Suggestion list closed, before the debounce
+- [x] Escape with the Suggestion list closed is not canceled
+- [x] Escape with the Suggestion list closed, before the debounce
       elapses, is not canceled and still sends no Typeahead request
 - [x] Escape with the Suggestion list open is canceled and closes it
