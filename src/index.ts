@@ -197,6 +197,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         try {
             const res = await fetch(url, { signal })
             if (signal.aborted) return
+            if (!res.ok) throw new Error(`status ${res.status}`)
             json = await res.json()
         } catch (err) {
             // a newer Query, or a close, cancelled this request

@@ -505,6 +505,25 @@ test('a network error closes the Suggestion list quietly', async t => {
     t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
 })
 
+test('a non-2xx response renders no Suggestions', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+    const stop = rejections()
+
+    type(input, 'al')
+    const call = await requestFor(calls, 'al')
+    call.resolve(new Response(JSON.stringify({ actors: ACTORS }), {
+        status: 500
+    }))
+    await sleep(50)
+
+    const errors = await stop()
+    window.fetch = fakeFetch
+    t.equal(errors.length, 0, 'should not reject')
+    t.equal(results(el).length, 0, 'should show no Suggestions')
+    t.equal(isOpen(el), false, 'should stay closed')
+})
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
