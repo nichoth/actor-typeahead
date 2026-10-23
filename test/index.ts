@@ -572,9 +572,10 @@ test('Escape closes the menu', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
     await waitFor(OPTION)
-    key(input, 'Escape')
 
+    t.equal(key(input, 'Escape'), false, 'should cancel the keydown')
     t.equal(results(el).length, 0, 'should close the menu')
+    t.equal(isOpen(el), false, 'should close the Suggestion list')
     t.equal(input.value, 'ali', 'should leave the input alone')
 })
 
