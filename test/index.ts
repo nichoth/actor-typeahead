@@ -563,6 +563,27 @@ test('a failed request closes an open Suggestion list', async t => {
     t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
 })
 
+test('the next Query after a failed request renders', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+    const stop = rejections()
+
+    type(input, 'al')
+    const failed = await requestFor(calls, 'al')
+    failed.reject(new TypeError('Failed to fetch'))
+    await sleep(50)
+    type(input, 'ali')
+    respond(await requestFor(calls, 'ali'), ACTORS)
+    await waitFor(OPTION)
+
+    const errors = await stop()
+    window.fetch = fakeFetch
+    t.equal(errors.length, 0, 'should not reject')
+    t.equal(results(el).length, ACTORS.length, 'should show Suggestions')
+    t.equal(isOpen(el), true, 'should open')
+    t.equal(input.getAttribute('aria-expanded'), 'true', 'expanded')
+})
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
