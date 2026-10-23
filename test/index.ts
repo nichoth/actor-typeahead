@@ -323,10 +323,23 @@ test('host and rows attributes', async t => {
 test('an empty input clears without a request', async t => {
     const { el, input } = await setup()
     type(input, '')
+    await sleep(DEBOUNCE)
 
     t.equal(requests.length, 0, 'should not make a request')
     t.equal(results(el).length, 0, 'should not show any rows')
 })
+
+test('emptying the input before the debounce sends no request',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        type(input, '')
+        await sleep(DEBOUNCE)
+
+        t.equal(requests.length, 0, 'should not make a request')
+        t.equal(isOpen(el), false, 'should stay closed')
+        t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
+    })
 
 test('select with the keyboard', async t => {
     const { el, input } = await setup()
