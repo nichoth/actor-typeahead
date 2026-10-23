@@ -43,19 +43,18 @@ Host listeners rely on events bubbling from the Authored input
 
 ## Keyboard
 
-All handled keys call `preventDefault()`, whether or not the
-Suggestion list is open.
+Arrow and Page keys always call `preventDefault()`. Enter and Escape
+call it only when the component acts on them, so with nothing to do
+they keep their usual effect: Enter submits a surrounding form and
+Escape closes a surrounding `<dialog>`.
 
 | Key | Effect |
 |-----|--------|
 | ArrowDown | Highlight the next Suggestion, stopping at the last |
 | ArrowUp | Highlight the previous Suggestion, stopping at the first |
 | PageDown / PageUp | Highlight the last / first Suggestion |
-| Escape | Clear the Suggestion list |
-| Enter | Select the Highlighted Suggestion. A no-op when none is highlighted |
-
-Because Enter is always prevented, pressing Enter in the Authored
-input never submits a surrounding form, even with no Suggestions.
+| Escape | Clear the Suggestion list and cancel a pending Typeahead request. Prevented only when the Suggestion list is open |
+| Enter | Select the Highlighted Suggestion. Prevented only when one is highlighted; otherwise passed through |
 
 ## Pointer and focus
 

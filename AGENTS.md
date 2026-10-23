@@ -36,6 +36,10 @@ Single-context layout. See `docs/agents/domain.md`.
 * Synthetic `keydown` events never trigger implicit form submission. To
   test that Enter does not submit, call `form.requestSubmit()` when the
   dispatched keydown was not canceled.
+* `#onkeydown` cancels a key only when the component acts on it (Enter
+  with a Highlighted Suggestion, Escape with the Suggestion list open),
+  so forms and `<dialog>`s keep working. Tests check this through the
+  return value of the `key()` helper in `test/index.ts`.
 * Typeahead requests are debounced (`DEBOUNCE_MS` in `src/index.ts`).
   `type()` then `waitFor(OPTION)` still works, but a test asserting
   that no request was sent must first sleep past the debounce (the

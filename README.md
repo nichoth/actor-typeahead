@@ -69,6 +69,11 @@ Typing in the input shows a Suggestion list of matching accounts.
 Choosing one, with the arrow keys and Enter or with the pointer, fills in
 the input with the account's handle.
 
+Enter and Escape are left alone when the component has nothing to do
+with them. Enter with no highlighted Suggestion submits a surrounding
+form, and Escape with the Suggestion list closed reaches a surrounding
+`<dialog>`.
+
 ## API
 
 This exposes ESM and common JS via
