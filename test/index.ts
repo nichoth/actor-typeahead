@@ -420,6 +420,51 @@ test('starting a new request aborts the previous one', async t => {
     t.equal(errors.length, 0, 'an aborted request should not reject')
 })
 
+test('a late response does not reopen a closed Suggestion list',
+    async t => {
+        const closes:[string, (input:HTMLInputElement) => void][] = [
+            ['Escape', input => { key(input, 'Escape') }],
+            ['Selection', input => {
+                key(input, 'ArrowDown')
+                key(input, 'Enter')
+            }],
+            ['an emptied input', input => type(input, '')],
+            ['focusout', input => {
+                input.dispatchEvent(new FocusEvent('focusout', {
+                    bubbles: true
+                }))
+            }],
+        ]
+
+        for (const [name, close] of closes) {
+            const { el, input } = await setup()
+            input.focus()
+            const calls = deferredFetch()
+            const stop = rejections()
+
+            // Suggestions on screen, so Selection has one to choose
+            type(input, 'al')
+            respond(await requestFor(calls, 'al'), ACTORS)
+            await waitFor(OPTION)
+            type(input, 'ali')
+            const late = await requestFor(calls, 'ali')
+            close(input)
+            respond(late, ACTORS)
+            await sleep(50)
+
+            const errors = await stop()
+            window.fetch = fakeFetch
+            t.equal(results(el).length, 0, `no Suggestions after ${name}`)
+            t.equal(isOpen(el), false, `closed after ${name}`)
+            t.equal(
+                input.getAttribute('aria-expanded'),
+                'false',
+                `collapsed after ${name}`
+            )
+            t.equal(errors.length, 0, `no rejection after ${name}`)
+        }
+    })
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
