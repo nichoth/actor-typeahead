@@ -542,6 +542,27 @@ test('a body that is not JSON closes the Suggestion list quietly',
         t.equal(isOpen(el), false, 'should stay closed')
     })
 
+test('a failed request closes an open Suggestion list', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+    const stop = rejections()
+
+    type(input, 'al')
+    respond(await requestFor(calls, 'al'), ACTORS)
+    await waitFor(OPTION)
+    type(input, 'ali')
+    const call = await requestFor(calls, 'ali')
+    call.reject(new TypeError('Failed to fetch'))
+    await sleep(50)
+
+    const errors = await stop()
+    window.fetch = fakeFetch
+    t.equal(errors.length, 0, 'should not reject')
+    t.equal(results(el).length, 0, 'should drop the old Suggestions')
+    t.equal(isOpen(el), false, 'should close')
+    t.equal(input.getAttribute('aria-expanded'), 'false', 'collapsed')
+})
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
