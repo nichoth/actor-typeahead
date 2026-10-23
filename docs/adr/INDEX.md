@@ -15,3 +15,4 @@ the [glossary](../GLOSSARY.md).
 | [ADR-005](ADR-005-typeahead-responses-are-untrusted.md) | Treat Typeahead request responses as untrusted data | 2026-10-13 |
 | [ADR-006](ADR-006-baseline-newly-available-with-feature-detection.md) | Allow Baseline Newly available features behind feature detection | 2026-10-13 |
 | [ADR-007](ADR-007-suggestion-list-manual-popover.md) | Suggestion list as a manual popover anchored to the Host element | 2026-10-13 |
+| [ADR-008](ADR-008-cancel-typeahead-requests-on-close.md) | Cancel Typeahead requests on close and drop aborted responses quietly | 2026-10-22 |

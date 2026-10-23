@@ -42,6 +42,14 @@ Single-context layout. See `docs/agents/domain.md`.
   `DEBOUNCE` constant in `test/index.ts`), or it passes vacuously. A
   stubbed `fetch` is called only after the debounce, so poll until it
   has been called before driving its response.
+* To control when a Typeahead request settles, use `deferredFetch()`
+  and `requestFor(calls, q)` in `test/index.ts`. The stub rejects with
+  an `AbortError` when the request's signal aborts, like the real
+  `fetch`. Restore `window.fetch = fakeFetch` at the end of the test.
+* tapout fails the whole run on any `unhandledrejection`, even when a
+  page listener calls `preventDefault()`. A test cannot observe an
+  unhandled rejection and still pass; `rejections()` only proves there
+  were none.
 * tapout's `--timeout` covers the whole run, not one test. Each
   debounced `type()` adds time, so raise it in the `test` script if
   the suite grows past it ("Tests timed out").
