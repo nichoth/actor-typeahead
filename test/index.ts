@@ -400,6 +400,26 @@ test('a late response for an older Query does not replace a newer one',
         t.equal(results(el).length, 1, 'should show the newer Suggestions')
     })
 
+test('starting a new request aborts the previous one', async t => {
+    const { input } = await setup()
+    const calls = deferredFetch()
+    const stop = rejections()
+
+    type(input, 'al')
+    const older = await requestFor(calls, 'al')
+    t.equal(older.signal?.aborted, false, 'in flight before the next Query')
+    type(input, 'ali')
+    const newer = await requestFor(calls, 'ali')
+    respond(newer, ACTORS)
+    await waitFor(OPTION)
+
+    const errors = await stop()
+    window.fetch = fakeFetch
+    t.equal(older.signal?.aborted, true, 'should abort the older request')
+    t.equal(newer.signal?.aborted, false, 'should not abort the newer one')
+    t.equal(errors.length, 0, 'an aborted request should not reject')
+})
+
 test('host and rows attributes', async t => {
     const { input } = await setup('host="https://example.test" rows="2"')
     type(input, 'ali')
