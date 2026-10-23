@@ -39,4 +39,4 @@ path; can run in parallel with 02 and 03 if the runner allows)
 - [ ] Escape with the Suggestion list closed is not canceled
 - [ ] Escape with the Suggestion list closed, before the debounce
       elapses, is not canceled and still sends no Typeahead request
-- [ ] Escape with the Suggestion list open is canceled and closes it
+- [x] Escape with the Suggestion list open is canceled and closes it

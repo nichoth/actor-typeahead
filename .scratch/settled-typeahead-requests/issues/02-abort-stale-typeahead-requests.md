@@ -37,5 +37,5 @@ removed" test), `docs/architecture/external-api.md`,
 - [ ] Removing the Host element aborts its in-flight request; the late
       response renders no Suggestions, leaves the list closed and
       raises no `unhandledrejection`
-- [ ] While a new Query is pending, the previous Suggestions stay
+- [x] While a new Query is pending, the previous Suggestions stay
       rendered until its response arrives
