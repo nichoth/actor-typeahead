@@ -2,7 +2,10 @@
 
 Started: 2026-10-26T04:28:12.550Z
 
-- [ ] 01-highlighted-suggestion-and-edge-are-visible.md
+- [x] 01-highlighted-suggestion-and-edge-are-visible.md
+  branch: actor-typeahead--a11y-audit-01-highlighted-suggestion-and-edge-are-visible
+  exit: 0
+  completed: 2026-10-26T04:44:39.401Z
 - [ ] 02-suggestion-list-named-from-any-name-source.md
 - [x] 03-announce-no-suggestions.md
   branch: actor-typeahead--a11y-audit-03-announce-no-suggestions
