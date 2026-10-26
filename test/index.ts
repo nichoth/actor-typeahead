@@ -302,6 +302,52 @@ test('a custom announce is used', async t => {
     t.equal(announced(el), `count ${ACTORS.length}`, 'its text is used')
 })
 
+test('the same count is announced again', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+
+    type(input, 'al')
+    respond(await requestFor(calls, 'al'), ACTORS)
+    await waitFor(OPTION)
+    const first = el.querySelector('[role="status"]')!.textContent
+    type(input, 'ali')
+    respond(await requestFor(calls, 'ali'), ACTORS)
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.notEqual(
+        el.querySelector('[role="status"]')!.textContent,
+        first,
+        'the live region content changes'
+    )
+    t.equal(announced(el), el.announce(ACTORS.length), 'the same count')
+})
+
+test('moving the Highlighted Suggestion is not announced',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+        const region = el.querySelector('[role="status"]')!
+        const before = region.textContent
+        let writes = 0
+        new MutationObserver(records => { writes += records.length })
+            .observe(region, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            })
+
+        for (const name of ['ArrowDown', 'ArrowDown', 'ArrowUp',
+            'PageDown', 'PageUp']) {
+            key(input, name)
+        }
+        await sleep(0)
+
+        t.equal(region.textContent, before, 'same content')
+        t.equal(writes, 0, 'the live region is not written')
+    })
+
 test('the Suggestion list is open exactly when it has Suggestions',
     async t => {
         const { el, input } = await setup()
