@@ -38,6 +38,14 @@ and none after a new Query. Marked with `aria-selected="true"` and
 referenced by the Authored input's `aria-activedescendant`. _Avoid_:
 active row, selected (Selection means the user chose it).
 
+**Suggestion count** -- The visually hidden live region that announces
+how many Suggestions a Typeahead request returned. The
+`.suggestion-count` class, a `<div role="status">` in the Host element,
+outside the Suggestion list. Its text comes from the `announce`
+property. Empty while the Suggestion list is closed, and not written
+when only the Highlighted Suggestion moves. _Avoid_: live region,
+status.
+
 ## Product
 
 **Actor** -- An ATProto account, as returned by the Typeahead request.

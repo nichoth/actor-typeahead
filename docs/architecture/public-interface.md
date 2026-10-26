@@ -26,6 +26,14 @@ documentation too.
 Both are reflected strings. Setting the property to `null` removes the
 attribute.
 
+| Property | Type | Default | Meaning |
+|----------|------|---------|---------|
+| `announce` | `(count:number) => string` | English, "N Suggestions available" | Suggestion count text |
+
+`announce` is a JS property with no attribute. It is called when a
+Typeahead request settles with at least one Suggestion, and read at
+that time, so it can be set after connect.
+
 ## Events
 
 | Event | `detail` | When |
@@ -54,6 +62,7 @@ The component renders into light DOM
             <span class="handle"></span>
         </li>
     </ul>
+    <div class="suggestion-count" role="status"></div>
 </actor-typeahead>
 ```
 
@@ -69,6 +78,13 @@ input's `<label>`s that have one, and is absent when none do. The
 `popover` attribute is set only when `ANCHORED` (the browser supports
 `anchor-scope`). Ids come from a per-instance prefix,
 `actor-typeahead-<n>`, so several instances on a page never collide.
+
+The Suggestion count is created empty on connect, outside the
+Suggestion list, because a closed popover is `display: none` and a
+region inside it would never be read. Each settled Typeahead request
+with Suggestions writes `announce(count)` into it, with a trailing
+no-break space on every other write so an identical count is read
+again. Closing the Suggestion list empties it.
 
 ## CSS custom properties
 
