@@ -348,6 +348,54 @@ test('moving the Highlighted Suggestion is not announced',
         t.equal(writes, 0, 'the live region is not written')
     })
 
+test('closing the Suggestion list empties the live region',
+    async t => {
+        const closes:[string, (
+            input:HTMLInputElement,
+            calls:Deferred[]
+        ) => void|Promise<void>][] = [
+            ['Escape', input => { key(input, 'Escape') }],
+            ['Selection', input => {
+                key(input, 'ArrowDown')
+                key(input, 'Enter')
+            }],
+            ['focus out', input => {
+                input.dispatchEvent(new FocusEvent('focusout', {
+                    bubbles: true
+                }))
+            }],
+            ['clearing the Query', input => type(input, '')],
+            ['an empty response', async (input, calls) => {
+                type(input, 'zzz')
+                respond(await requestFor(calls, 'zzz'), [])
+            }],
+            ['a failed request', async (input, calls) => {
+                type(input, 'zzz')
+                const call = await requestFor(calls, 'zzz')
+                call.reject(new TypeError('Failed to fetch'))
+            }],
+        ]
+
+        for (const [name, close] of closes) {
+            const { el, input } = await setup()
+            const calls = deferredFetch()
+            type(input, 'ali')
+            respond(await requestFor(calls, 'ali'), ACTORS)
+            await waitFor(OPTION)
+            t.ok(announced(el), `announced before ${name}`)
+
+            await close(input, calls)
+            await sleep(50)
+            window.fetch = fakeFetch
+            t.equal(isOpen(el), false, `closed after ${name}`)
+            t.equal(
+                el.querySelector('[role="status"]')!.textContent,
+                '',
+                `empty after ${name}`
+            )
+        }
+    })
+
 test('the Suggestion list is open exactly when it has Suggestions',
     async t => {
         const { el, input } = await setup()

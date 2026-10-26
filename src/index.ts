@@ -317,6 +317,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         }
         const count = this.#suggestionCount
         if (count.parentNode !== this) this.append(count)
+        // only a response writes the count; any close empties it
+        if (!this.#actors.length) count.textContent = ''
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
             const option = suggestion(actor, i, i === this.#index)
