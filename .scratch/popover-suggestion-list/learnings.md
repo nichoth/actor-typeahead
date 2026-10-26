@@ -159,3 +159,36 @@ popover attribute, position absolute, 4px gap, hidden when empty.
 Docs-only/scaffolding (example, AGENTS.md): no tests, by design.
 
 ---
+<!-- nightralph:entry ticket=popover-suggestion-list:5 attempt=1 outcome=done -->
+## 2026-10-25 19:56 -- popover-suggestion-list/05 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $0.69. Checked items: "`grep -rn -E 'menu|\.user|data-active|pending rename|popover ticket' docs/GLOSSARY.md docs/architecture/` finds nothing that describes current behavior", "Every class name, custom property, ARIA attribute, private field and helper named in the four files exists in `src/index.ts` or `src/index.css`", "The DOM contract in `public-interface.md` matches what `render()` and `suggestion()` produce", "Lines stay under 80 columns, with no em dashes or arrow characters", "`git diff --stat` shows changes only under `docs/`".
+
+### Agent notes
+# Ticket 05: refresh glossary and architecture docs
+
+Docs-only ticket: no test-first (ticket forbids doc tests), recorded here.
+
+Changed: docs/GLOSSARY.md, docs/architecture/public-interface.md,
+runtime-state.md, components.md. Source read as truth (src/index.ts,
+src/index.css).
+
+- Glossary: current class names, --padding-suggestion-list,
+  aria-selected + aria-activedescendant; pending notes dropped.
+- public-interface: DOM contract rewritten from render()/suggestion()
+  (example ids use the actor-typeahead-1 prefix); notes on autocomplete
+  default, aria-labelledby, popover only when ANCHORED, per-instance ids.
+- runtime-state: #id row, #suggestionList, instances counter in intro,
+  id/aria-selected in DOM table, "closed" with and without ANCHORED.
+- components: ANCHORED, instances, suggestion(), Render lifecycle entry
+  with #toggle(), disconnectedCallback cancels, option-not-button wording.
+
+Reading of criteria: the grep hit "_Avoid_: menu" in GLOSSARY is the
+avoid-list, not current behavior. The 80-column rule is met for prose;
+the only longer lines are markdown table rows, which these files already
+had, since a table row cannot wrap.
+
+Lint and npm test (144/144) pass. No AGENTS.md learnings added: nothing
+reusable beyond what AGENTS.md already says.
+
+---
