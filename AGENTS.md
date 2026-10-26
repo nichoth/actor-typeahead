@@ -84,6 +84,12 @@ Single-context layout. See `docs/agents/domain.md`.
   to any stray request before asserting the list is closed. To prove
   a coverage-only test can fail, break the code temporarily (e.g.
   drop `#cancel()` from `#clear()`) and run it.
+* `render()` writes `aria-activedescendant` and `aria-selected` only
+  for an index that has a Suggestion, so a bad `#index` with no
+  Suggestions is invisible. Break key handling with Suggestions open
+  when proving a keyboard test can fail.
+* The keyboard table in `docs/architecture/components.md` must match
+  `#onkeydown`; change them together.
 
 ## Browser support
 
