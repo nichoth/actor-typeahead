@@ -21,7 +21,7 @@ have no ids)
 **Touches:** `example/index.html`, `example/index.ts` (the FOUCE block
 at the bottom)
 
-**Status:** ready-for-agent
+**Status:** done
 
 No automated tests: per the project rules, docs and the example page
 are not tested. Verify by hand with the dev server, and stop the server
