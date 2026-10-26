@@ -114,3 +114,8 @@ Single-context layout. See `docs/agents/domain.md`.
   checked by hand: set `ANCHORED` to `false` and use the example page,
   which has instances in a clipping container and near the viewport
   bottom.
+* stylelint wants CSS keywords in lowercase (`currentcolor`, not
+  `currentColor`); system colours like `Highlight` are accepted as is.
+* Style-only changes are checked by hand: run `npx vite`, stub
+  `window.fetch` in the page, then read computed styles. Chrome
+  DevTools forced-colors emulation covers Windows High Contrast.
