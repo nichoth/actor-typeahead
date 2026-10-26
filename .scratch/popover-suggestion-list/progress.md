@@ -1,6 +1,6 @@
 # Progress: popover-suggestion-list
 
-Started: 2026-10-13T19:35:07.009Z
+Started: 2026-10-26T02:54:11.693Z
 
 - [x] 01-rename-css-api-to-glossary-terms.md
   branch: actor-typeahead--popover-suggestion-list-01-rename-css-api-to-glossary-terms
@@ -14,5 +14,5 @@ Started: 2026-10-13T19:35:07.009Z
   branch: actor-typeahead--popover-suggestion-list-03-suggestion-list-top-layer-anchor-positioning
   exit: 0
   completed: 2026-10-13T19:45:00.826Z
-- [ ] 05-refresh-docs-after-popover-tickets.md
 - [ ] 04-announce-suggestion-count.md
+- [ ] 05-refresh-docs-after-popover-tickets.md
