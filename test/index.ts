@@ -538,6 +538,37 @@ test('moving the Highlighted Suggestion is not announced',
         t.equal(writes, 0, 'the live region is not written')
     })
 
+test('a key after no Suggestions keeps the announcement',
+    async t => {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+
+        type(input, 'zzz')
+        respond(await requestFor(calls, 'zzz'), [])
+        await sleep(50)
+        window.fetch = fakeFetch
+
+        const region = el.querySelector('[role="status"]')!
+        const before = region.textContent
+        let writes = 0
+        new MutationObserver(records => { writes += records.length })
+            .observe(region, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            })
+
+        for (const name of ['ArrowDown', 'ArrowUp', 'PageDown',
+            'PageUp']) {
+            key(input, name)
+        }
+        await sleep(0)
+
+        t.ok(before, 'starts announced')
+        t.equal(region.textContent, before, 'same content')
+        t.equal(writes, 0, 'the live region is not written')
+    })
+
 test('closing the Suggestion list empties the live region',
     async t => {
         const closes:[string, (

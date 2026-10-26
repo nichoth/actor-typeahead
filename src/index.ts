@@ -135,6 +135,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
     #onkeydown (evt:KeyboardEvent) {
         const last = this.#actors.length - 1
+        const moves = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp']
+        // with no Suggestions there is nothing to move to, and a render
+        // would empty a "No Suggestions" announcement
+        if (last < 0 && moves.includes(evt.key)) {
+            evt.preventDefault()
+            return
+        }
 
         switch (evt.key) {
             case 'ArrowDown':

@@ -79,6 +79,9 @@ Single-context layout. See `docs/agents/domain.md`.
   `#request` writes it; `render()` only empties it when there are no
   Suggestions. To prove a key does not write it, observe it with a
   `MutationObserver`, since an identical rewrite leaves the text equal.
+* With no Suggestions, arrow and Page keys return before `render()`,
+  because its empty-list path would erase a "No Suggestions"
+  announcement. Keep any new key that only moves the Highlight there.
 * A response with zero Suggestions writes `announce(0)` after its
   `render()`, so the Suggestion count is not empty after every close.
   A test of "closing empties the count" must close by Escape,

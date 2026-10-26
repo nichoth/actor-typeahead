@@ -56,7 +56,9 @@ Host listeners rely on events bubbling from the Authored input
 Arrow and Page keys always call `preventDefault()`. Enter and Escape
 call it only when the component acts on them, so with nothing to do
 they keep their usual effect: Enter submits a surrounding form and
-Escape closes a surrounding `<dialog>`.
+Escape closes a surrounding `<dialog>`. With no Suggestions, arrow
+and Page keys do nothing else, so they leave the Suggestion count as
+it is.
 
 | Key | Effect |
 |-----|--------|
