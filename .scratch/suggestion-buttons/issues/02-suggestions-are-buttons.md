@@ -32,7 +32,7 @@ the Suggestion builder near the bottom of the file), `src/index.css`
 Suggestion is an `li` and not a button), `docs/GLOSSARY.md`
 (Suggestion entry)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] `click()` on a Suggestion inside a `<form>` selects it and does
   not fire `submit` (the test fails if `type="button"` is dropped)
