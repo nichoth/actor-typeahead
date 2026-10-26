@@ -186,6 +186,13 @@ test('aria-activedescendant tracks the highlighted option', async t => {
     checkActive(t, el, input, 1)
     key(input, 'ArrowUp')
     checkActive(t, el, input, 0)
+    key(input, 'ArrowUp')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'removed by ArrowUp on the first option'
+    )
+    key(input, 'ArrowUp')
+    checkActive(t, el, input, ACTORS.length - 1)
 
     key(input, 'Escape')
     t.ok(
@@ -961,6 +968,31 @@ test('ArrowUp with nothing Highlighted highlights the last Suggestion',
         t.equal(key(input, 'ArrowUp'), false, 'should cancel the keydown')
         checkActive(t, el, input, ACTORS.length - 1)
     })
+
+test('ArrowUp on the first Suggestion clears the Highlight', async t => {
+    const { el, input, submits } = await formSetup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    checkActive(t, el, input, 0)
+
+    t.equal(key(input, 'ArrowUp'), false, 'should cancel the keydown')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'should remove aria-activedescendant'
+    )
+    const selected = [...results(el)].filter(option => {
+        return option.getAttribute('aria-selected') === 'true'
+    })
+    t.equal(selected.length, 0, 'no option is selected')
+    t.equal(isOpen(el), true, 'should stay open')
+
+    const passed = key(input, 'Enter')
+    t.equal(passed, true, 'Enter should not be canceled')
+    if (passed) input.form!.requestSubmit()
+    t.equal(submits(), 1, 'should submit the form')
+    t.equal(input.value, 'ali', 'should not select')
+})
 
 test('Escape closes the menu', async t => {
     const { el, input } = await setup()
