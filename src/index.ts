@@ -289,9 +289,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     }
 
     /**
-     * Render into light DOM, next to the authored `<input>`. Only the
-     * Suggestion list is rebuilt, so the input element, and anything the
-     * consumer attached to it, is never replaced. On the input, only the
+     * Render into light DOM. Only the suggestion list is rebuilt,
+     * so the input element, and anything the consumer attached to it,
+     * is never replaced. On the input, only the
      * ARIA combobox attributes are written, plus `autocomplete="off"`
      * when the page did not set `autocomplete`.
      */
