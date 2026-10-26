@@ -344,7 +344,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             input.setAttribute('aria-expanded', String(open))
 
             // the Suggestion list carries at most one of the two
-            const name = nameSource(input)
+            const name = nameSource(input, this)
             for (const attr of ['aria-labelledby', 'aria-label'] as const) {
                 const value = name[attr]
                 if (value) list.setAttribute(attr, value)
@@ -428,7 +428,7 @@ function suggestion (
  * What names the Authored input, in the order of accessible name
  * computation, as the attribute the Suggestion list copies it to.
  */
-function nameSource (input:HTMLInputElement):{
+function nameSource (input:HTMLInputElement, host:HTMLElement):{
     'aria-labelledby'?:string;
     'aria-label'?:string;
 } {
@@ -449,10 +449,26 @@ function nameSource (input:HTMLInputElement):{
     }
 
     const text = labels
-        .map(label => (label.textContent ?? '').trim())
+        .map(label => labelText(label, host).trim())
         .filter(Boolean)
         .join(' ')
     return text ? { 'aria-label': text } : {}
+}
+
+/**
+ * The text of a label, without the Host element's content, which a
+ * label that wraps the Host element would otherwise include.
+ */
+function labelText (label:HTMLLabelElement, host:HTMLElement):string {
+    const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT, {
+        acceptNode: node => host.contains(node) ?
+            NodeFilter.FILTER_REJECT :
+            NodeFilter.FILTER_ACCEPT
+    })
+
+    let text = ''
+    while (walker.nextNode()) text += walker.currentNode.nodeValue
+    return text
 }
 
 /**

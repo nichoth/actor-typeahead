@@ -311,6 +311,24 @@ test('the listbox is named by the text of labels without ids',
         )
     })
 
+test('a wrapping label names the listbox without its Suggestions',
+    async t => {
+        document.body.innerHTML = `<label>
+            <span>Handle</span>
+            <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        </label>`
+        const el = (await waitFor(ActorTypeahead.TAG))!
+        type(el.querySelector('input')!, 'ali')
+        await waitFor(OPTION)
+        const list = el.querySelector('[role="listbox"]')!
+
+        t.equal(
+            list.getAttribute('aria-label'),
+            document.querySelector('label span')!.textContent,
+            'should be only the label\'s own text'
+        )
+    })
+
 test('two instances have distinct ids', async t => {
     requests = []
     document.body.innerHTML = `
