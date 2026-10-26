@@ -221,6 +221,33 @@ test('autocomplete is off unless the page sets it', async t => {
     )
 })
 
+test('a listbox with no name source has no name', async t => {
+    const { el, input } = await setup()
+    const list = el.querySelector('[role="listbox"]')!
+    t.ok(!list.hasAttribute('aria-label'), 'should have no aria-label')
+    t.ok(
+        !list.hasAttribute('aria-labelledby'),
+        'should have no aria-labelledby'
+    )
+
+    const name = 'Handle'
+    input.setAttribute('aria-label', name)
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.equal(list.getAttribute('aria-label'), name, 'named once set')
+
+    input.removeAttribute('aria-label')
+    requests = []
+    type(input, 'alic')
+    await waitFor(null, null, () => requests.length ? list : null)
+    await sleep(50)
+    t.ok(
+        !list.hasAttribute('aria-label') &&
+            !list.hasAttribute('aria-labelledby'),
+        'should drop the stale name when the source is removed'
+    )
+})
+
 test('the listbox is labelled by the input\'s label', async t => {
     document.body.innerHTML = `<label id="handle-label" for="handle">
         Handle
