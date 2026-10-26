@@ -81,3 +81,95 @@ Seams: the browser suite (test/index.ts), driving keydown on the input.
   keyboard table must follow #onkeydown.
 
 ---
+<!-- nightralph:entry ticket=a11y-audit:1 attempt=1 outcome=done -->
+## 2026-10-25 21:41 -- a11y-audit/01 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $0.81. Checked items: "With one Suggestion hovered and a different one Highlighted, only the Highlighted Suggestion shows the outline", "The Highlighted Suggestion's outline is at least 3:1 against the default Suggestion list background", "With forced-colors emulation in Chrome DevTools, the Highlighted Suggestion shows in the system highlight colours", "With forced-colors emulation, the Suggestion list border is still visible (or, if it is not, a fix is added and noted)", "The default `--color-border` is at least 3:1 against white, and the README CSS variables block shows the same value", "The commit body notes the new default border colour", "`npm run lint`, `npx stylelint src/*.css`, `npm test`, `npm run build` and `npm run build-manifest` pass".
+
+### Agent notes
+# a11y-audit 01: Highlighted Suggestion and list edge are visible
+
+## Implemented
+- src/index.css: `.suggestion[aria-selected="true"]` keeps the hover
+  background and adds `outline: 2px solid currentcolor;
+  outline-offset: -2px`. Hover alone gets only the background.
+  Nested `@media (forced-colors: active)` block: Highlighted uses
+  `Highlight`/`HighlightText` with `forced-color-adjust: none`.
+- `--color-border` default `#0002` -> `#0007` (README block too).
+  Over white that composites to rgb(136) = 3.54:1 (`#0006` is 2.85:1).
+- AGENTS.md: stylelint keyword case, how to check styles by hand.
+
+## Decisions
+- No automated tests (ticket: no test checks CSS). Skipped test-first.
+- `@cssprop` JSDoc unchanged: `--color-hover` already painted both the
+  hover and Highlighted rows; `--color-border` meaning unchanged.
+- GLOSSARY Highlighted Suggestion entry describes no style; unchanged.
+
+## Manual verification (vite + chrome devtools, stubbed fetch)
+- Mouse on carol, keyboard on bob: only bob has outline solid; carol
+  has the hover background only.
+- Outline is rgb(0,0,0) (currentcolor) vs white list: 21:1.
+- Forced colors: Highlighted bg Highlight, color HighlightText,
+  forced-color-adjust none. List border survives (solid 1px black);
+  only the box-shadow is dropped. No fix needed.
+- lint, stylelint, npm test (228 pass), build (incl. build-manifest).
+
+---
+<!-- nightralph:entry ticket=a11y-audit:2 attempt=1 outcome=done -->
+## 2026-10-25 21:44 -- a11y-audit/02 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.28. Checked items: "When the input has `aria-labelledby`, the list's `aria-labelledby` equals it and the list has no `aria-label`", "No test or code path adds an `id` or other attribute to a page `<label>`", "`npm run lint`, `npx stylelint src/*.css`, `npm test` and `npm run build` pass".
+
+### Agent notes
+# a11y-audit 02: Suggestion list named from any name source
+
+## Item 1: input aria-labelledby copied to the list
+- Test "the listbox copies the input's aria-labelledby" (test/index.ts).
+  Red: list had null aria-labelledby. Green: render() reads the input's
+  aria-labelledby before falling back to label ids.
+- Iterated with `test.only` (tapzero supports it), removed before commit.
+
+## Item 2: input aria-label copied to the list
+- Test "the listbox copies the input's aria-label". Fixture also has a
+  `<label id for>`, so it proves aria-label wins over labels.
+- Moved name lookup into module-level `nameSource(input)` in
+  src/index.ts; render() sets one attribute and removes the other.
+
+## Item 3: <label for> without id -> aria-label of trimmed text
+- Test "the listbox is named by the text of labels without ids": two
+  plain labels, one with nested markup; expected value is computed from
+  the fixture's labels (ticket asks for that, not a literal). Same test
+  checks the labels still carry only `for` (ADR-004, item 6).
+- Read "when every one has an id" strictly: one label without an id
+  switches all labels to the text fallback.
+
+## Extra: wrapping label
+- A `<label>` wrapping the Host element had the Suggestions in its
+  textContent ("Handle alice.testbob.test"). Test "a wrapping label
+  names the listbox without its Suggestions" (red, then green with
+  `labelText()`, a TreeWalker that rejects text inside the Host).
+
+## Items 4 and 5: labels with ids; no name source
+- Item 4: existing "the listbox is labelled by the input's label" still
+  passes unchanged.
+- Item 5: test "a listbox with no name source has no name" checks the
+  plain case, then sets aria-label, re-renders, removes it and
+  re-renders (stale attribute removed). It passed on first run since
+  slice 2 already removes the other attribute; proved it can fail by
+  dropping `removeAttribute` in render(). A `waitFor` there hung the
+  run, so it waits for the request and sleeps 50ms instead.
+
+## Item 6: no attribute written on a page <label>
+- Code only reads labels (`id`, text). Asserted in the item-3 test
+  (labels keep only `for`). No separate commit; no code change.
+
+## Docs (no test, per rules)
+- README labelling paragraph, public-interface.md snippet comment and
+  name-source paragraph. GLOSSARY Suggestion list does not name the
+  label source, so left unchanged.
+- AGENTS.md: nameSource() note and `test.only` tip.
+
+## Gates
+- lint, stylelint, build pass; full `npm test`: 240/240.
+
+---
