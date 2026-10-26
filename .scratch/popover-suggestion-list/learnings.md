@@ -192,3 +192,59 @@ Lint and npm test (144/144) pass. No AGENTS.md learnings added: nothing
 reusable beyond what AGENTS.md already says.
 
 ---
+<!-- nightralph:entry ticket=popover-suggestion-list:4 attempt=1 outcome=done -->
+## 2026-10-25 20:02 -- popover-suggestion-list/04 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.48. Checked items: "The host contains one polite live region (`[role="status"]`) outside the Suggestion list, present and empty before any Query", "When a Typeahead request settles with Suggestions, the live region's text is the return value of `announce` for that count", "A custom `announce` set on the element is called with the number of Suggestions, and its return value is used", "A second response with the same number of Suggestions changes the live region's content", "Moving the Highlighted Suggestion with the arrow or Page keys does not change the live region's content", "When the Suggestion list closes (Escape, Selection, focus out, clearing the Query, an empty response, a failed request), the live region is emptied", "Two instances on one page each have their own live region, and a response for one does not change the other's", "README documents the `announce` property and shows the live region in the markup snippet".
+
+### Agent notes
+# Ticket 04: announce the number of Suggestions
+
+All checklist items done. Each behavioral item was written test-first
+(red seen) or, where an earlier item's code already made it pass,
+proven by sabotage.
+
+Implemented (src/index.ts):
+- Public field `announce:(count:number) => string`, default
+  `defaultAnnounce` (English, singular/plural). JSDoc feeds the manifest.
+- `#suggestionCount`: `<div class="suggestion-count" role="status">`,
+  created by render() and appended to the host after the list, so it
+  exists empty from connect.
+- `#announce(count)`, called only from `#request` after render() when
+  the response has Suggestions. Toggles `#nbsp` to alternate a trailing
+  U+00A0, so an identical count changes the content.
+- render() empties the region when `#actors` is empty. That covers every
+  close path (#clear: Escape, Selection, focusout, empty Query, failed
+  request; plus an empty response), and never fires on navigation.
+- src/index.css: visually hidden clip pattern under `actor-typeahead`.
+
+Tests (test/index.ts): `announced(el)` helper strips the trailing nbsp.
+New tests: empty region before any Query, default text ==
+el.announce(n), custom announce called with count and used, repeated
+count changes content, navigation keys do not write it
+(MutationObserver), every close path empties it, two instances
+independent.
+
+Red/green evidence: items 1, 2, 3 and 6 failed before their code. Items
+4, 5 and 7 passed when written (the code came with item 3), so each was
+checked by sabotage: removing the nbsp alternation fails item 4,
+announcing from render() fails item 5, writing to the last region in the
+document fails item 7.
+
+Docs (no tests, by design): README Properties section with a
+translation example, live region in the markup snippet; GLOSSARY
+"Suggestion count"; public-interface property table, DOM contract and
+a note.
+
+Readings: "text is the return value of announce" is compared after
+stripping the alternating trailing nbsp. Default English text is not
+asserted literally (no text-content tests); the custom-announce test
+uses a literal from the test itself.
+
+Gotcha hit: a waitFor lambda that never matched hung the run ("Tests
+auto-finished") during a sabotage check; switched to sleep(50). Added
+to AGENTS.md.
+
+Final gate: npm test 178/178, lint, stylelint, build all pass.
+
+---
