@@ -283,6 +283,34 @@ test('the listbox copies the input\'s aria-label', async t => {
     )
 })
 
+test('the listbox is named by the text of labels without ids',
+    async t => {
+        document.body.innerHTML = `<label for="handle">
+            Handle
+        </label>
+        <${ActorTypeahead.TAG}><input id="handle"></${ActorTypeahead.TAG}>
+        <label for="handle"> on <b>Bluesky</b> </label>`
+        const el = (await waitFor(ActorTypeahead.TAG))!
+        const list = el.querySelector('[role="listbox"]')!
+        const labels = [...document.querySelectorAll('label')]
+        const text = labels.map(label => label.textContent!.trim())
+
+        t.equal(
+            list.getAttribute('aria-label'),
+            text.join(' '),
+            'should be the trimmed label text, joined with a space'
+        )
+        t.ok(
+            !list.hasAttribute('aria-labelledby'),
+            'should have no aria-labelledby'
+        )
+        t.deepEqual(
+            labels.map(label => label.getAttributeNames()),
+            [['for'], ['for']],
+            'should not write attributes on the page\'s labels'
+        )
+    })
+
 test('two instances have distinct ids', async t => {
     requests = []
     document.body.innerHTML = `

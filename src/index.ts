@@ -438,12 +438,21 @@ function nameSource (input:HTMLInputElement):{
     const label = input.getAttribute('aria-label')
     if (label) return { 'aria-label': label }
 
-    const ids = [...(input.labels ?? [])]
-        .map(label => label.id)
-        .filter(Boolean)
-    if (ids.length) return { 'aria-labelledby': ids.join(' ') }
+    // reference the labels when they all have ids, otherwise copy their
+    // text, because the component never writes ids onto the page
+    const labels = [...(input.labels ?? [])]
+    if (!labels.length) return {}
+    if (labels.every(label => label.id)) {
+        return {
+            'aria-labelledby': labels.map(label => label.id).join(' ')
+        }
+    }
 
-    return {}
+    const text = labels
+        .map(label => (label.textContent ?? '').trim())
+        .filter(Boolean)
+        .join(' ')
+    return text ? { 'aria-label': text } : {}
 }
 
 /**
