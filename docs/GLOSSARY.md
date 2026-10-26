@@ -22,21 +22,21 @@ Host element. The component enhances it and never replaces it. See
 [ADR-004](adr/ADR-004-enhance-the-authored-input.md).
 
 **Suggestion list** -- The set of Suggestions shown for the current
-Query, beneath the Authored input. Hidden when empty. Currently the
-`.menu` class and `--padding-menu` property (pending rename to
-`.suggestion-list`, popover ticket 01). _Avoid_: menu, dropdown,
-results.
+Query, beneath the Authored input. Hidden when empty. The
+`.suggestion-list` class, with `role="listbox"`, styled by the
+`--padding-suggestion-list` property. Where anchor positioning is
+supported it is a manual popover in the top layer. _Avoid_: menu,
+dropdown, results.
 
 **Suggestion** -- One Actor offered as a possible completion for the
-current Query: an avatar and a Handle. Currently the `.user` class
-(pending rename to `.suggestion`, popover ticket 01). _Avoid_: row,
-result, item, user.
+current Query: an avatar and a Handle. The `.suggestion` class, an
+`<li role="option">`. _Avoid_: row, result, item, user.
 
 **Highlighted Suggestion** -- The Suggestion the user has moved to with
 the arrow or Page keys, which Enter will select. At most one at a time,
-and none after a new Query. Marked with `data-active="true"` today,
-`aria-selected="true"` after popover ticket 02. _Avoid_: active row,
-selected (Selection means the user chose it).
+and none after a new Query. Marked with `aria-selected="true"` and
+referenced by the Authored input's `aria-activedescendant`. _Avoid_:
+active row, selected (Selection means the user chose it).
 
 ## Product
 
