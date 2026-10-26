@@ -166,7 +166,7 @@ import '@substrate-system/actor-typeahead/min/css'
 ```css
 actor-typeahead {
     --color-background: #fff;
-    --color-border: #0002;
+    --color-border: #0007;
     --color-shadow: #000;
     --color-hover: #0001;
     --color-avatar-fallback: #0002;

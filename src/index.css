@@ -1,6 +1,6 @@
 actor-typeahead {
     --color-background-inherited: var(--color-background, #fff);
-    --color-border-inherited: var(--color-border, #0002);
+    --color-border-inherited: var(--color-border, #0007);
     --color-shadow-inherited: var(--color-shadow, #000);
     --color-hover-inherited: var(--color-hover, #0001);
     --color-avatar-fallback-inherited: var(--color-avatar-fallback, #0002);
@@ -102,6 +102,24 @@ actor-typeahead {
         &:hover,
         &[aria-selected="true"] {
             background-color: var(--color-hover-inherited);
+        }
+
+        /*
+         * The outline follows the text color, so the Highlighted
+         * Suggestion stands out from the list and from a hovered one
+         */
+        &[aria-selected="true"] {
+            outline: 2px solid currentcolor;
+            outline-offset: -2px;
+        }
+
+        /* forced colors drop the background, so use the system colors */
+        @media (forced-colors: active) {
+            &[aria-selected="true"] {
+                forced-color-adjust: none;
+                background-color: Highlight;
+                color: HighlightText;
+            }
         }
     }
 
