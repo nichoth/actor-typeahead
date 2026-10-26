@@ -61,9 +61,9 @@ parameter of the Typeahead request. An empty Query clears the
 Suggestion list without a request.
 
 **Selection** -- Choosing a Suggestion, with Enter on the Highlighted
-Suggestion or with the pointer. Writes the Handle into the Authored
-input, closes the Suggestion list and fires `actor-typeahead:select`
-with the Actor as `detail`.
+Suggestion or with a click on a Suggestion. Writes the Handle into the
+Authored input, closes the Suggestion list and fires
+`actor-typeahead:select` with the Actor as `detail`.
 
 **API host** -- The server the Typeahead request goes to, set with the
 `host` attribute. Defaults to the public Bluesky AppView,

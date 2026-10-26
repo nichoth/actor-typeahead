@@ -28,7 +28,7 @@ Every listener is the element itself, dispatched through
 | Target | Events | Bound in |
 |--------|--------|----------|
 | Host element | `input`, `keydown`, `focusout` | `constructor` |
-| Suggestion list | `pointerdown`, `pointerup` | `render()`, when the list is first created |
+| Suggestion list | `mousedown`, `click` | `render()`, when the list is first created |
 
 Host listeners rely on events bubbling from the Authored input
 ([ADR-004](../adr/ADR-004-enhance-the-authored-input.md)).
@@ -68,14 +68,20 @@ Escape closes a surrounding `<dialog>`.
 
 ## Pointer and focus
 
-`pointerdown` on the Suggestion list sets a pressed flag, so the
-`focusout` caused by the press does not clear the list. `pointerup`
-clears the flag, then selects the Suggestion under the pointer, or
-returns focus to the Authored input when the pointer is not on a
-Suggestion, found with `closest('[role="option"]')`. A Suggestion is
-an `li[role="option"]`, not a button, so a press on it never submits a
+`click` on the Suggestion list selects the Suggestion that contains
+the event target, found with `closest('[role="option"]')`. A click
+inside the list but not on a Suggestion does nothing. `click` fires
+for every input method, including the synthetic click that screen
+readers in browse mode, voice control and switch access send with no
+pointer events, and only for the primary button. A Suggestion is an
+`li[role="option"]`, not a button, so a click on it never submits a
 form.
 
-`pointerup` is bound only on the Suggestion list. A press that starts
-on the list and is released outside it leaves the pressed flag set,
-and the next `focusout` does not clear the list.
+`mousedown` on the Suggestion list is canceled, so a press or a tap
+never moves focus off the Authored input.
+
+`focusout` clears the Suggestion list only when its `relatedTarget` is
+outside the Host element. Some assistive technology focuses a
+Suggestion before it sends the click, and that move must not close
+the list. Focus leaving a Suggestion for somewhere outside the Host
+element still closes it.
