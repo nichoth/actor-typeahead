@@ -47,7 +47,7 @@ on `ActorTypeahead`), `README.md` (CSS variables block),
 longer holds), `dist/` manifest via `npm run build-manifest` (not
 committed)
 
-**Status:** ready-for-agent
+**Status:** done
 
 No automated tests: per the project rules, no test checks CSS. Verify
 by hand on the example page.

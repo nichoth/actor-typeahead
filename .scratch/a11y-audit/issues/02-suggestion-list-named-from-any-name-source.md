@@ -33,18 +33,18 @@ labelled by the input's label" and new tests beside it), `README.md`
 `aria-labelledby` paragraph), `docs/GLOSSARY.md` (Suggestion list, if
 its wording names the label source)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] When the input has `aria-labelledby`, the list's
   `aria-labelledby` equals it and the list has no `aria-label`
-- [ ] When the input has `aria-label` (and no `aria-labelledby`), the
+- [x] When the input has `aria-label` (and no `aria-labelledby`), the
   list's `aria-label` equals it and the list has no `aria-labelledby`
-- [ ] For a `<label for>` with no `id`, the list's `aria-label` equals
+- [x] For a `<label for>` with no `id`, the list's `aria-label` equals
   the label's trimmed text, compared to the fixture's label, not a
   literal
-- [ ] Labels that all have ids still give the list an
+- [x] Labels that all have ids still give the list an
   `aria-labelledby` referencing them (existing test keeps passing)
-- [ ] With no name source, the list has neither `aria-label` nor
+- [x] With no name source, the list has neither `aria-label` nor
   `aria-labelledby`
 - [x] No test or code path adds an `id` or other attribute to a page
   `<label>`
