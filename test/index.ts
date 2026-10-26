@@ -813,6 +813,49 @@ test('removing the element before the debounce sends no request',
         t.equal(requests.length, 0, 'should not make a request')
     })
 
+test('focusout and Selection before the debounce send no request',
+    async t => {
+        const closes:[string, (input:HTMLInputElement) => void][] = [
+            ['Selection', input => {
+                key(input, 'ArrowDown')
+                key(input, 'Enter')
+            }],
+            ['focusout', input => {
+                input.dispatchEvent(new FocusEvent('focusout', {
+                    bubbles: true
+                }))
+            }],
+        ]
+
+        for (const [name, close] of closes) {
+            const { el, input } = await setup()
+            input.focus()
+            const calls = deferredFetch()
+
+            // Suggestions on screen, so Selection has one to choose
+            type(input, 'al')
+            respond(await requestFor(calls, 'al'), ACTORS)
+            await waitFor(OPTION)
+            type(input, 'ali')
+            close(input)
+            await sleep(DEBOUNCE)
+
+            // answer a stray request, so it could reopen the list
+            const late = calls.filter(c => c.q === 'ali')
+            late.forEach(call => respond(call, ACTORS))
+            await sleep(50)
+
+            window.fetch = fakeFetch
+            t.equal(late.length, 0, `no request after ${name}`)
+            t.equal(isOpen(el), false, `closed after ${name}`)
+            t.equal(
+                input.getAttribute('aria-expanded'),
+                'false',
+                `collapsed after ${name}`
+            )
+        }
+    })
+
 test('select with the keyboard', async t => {
     const { el, input } = await setup()
     let selected:Actor|null = null
