@@ -952,6 +952,16 @@ test('arrow keys stop at the last result', async t => {
     t.equal(results(el).length, 0, 'should close the menu')
 })
 
+test('ArrowUp with nothing Highlighted highlights the last Suggestion',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        t.equal(key(input, 'ArrowUp'), false, 'should cancel the keydown')
+        checkActive(t, el, input, ACTORS.length - 1)
+    })
+
 test('Escape closes the menu', async t => {
     const { el, input } = await setup()
     type(input, 'ali')

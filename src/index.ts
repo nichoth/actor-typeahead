@@ -151,7 +151,10 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
             case 'ArrowUp':
                 evt.preventDefault()
-                this.#index = Math.max(this.#index - 1, 0)
+                // with nothing Highlighted, wrap to the last Suggestion
+                this.#index = this.#index < 0 ?
+                    last :
+                    Math.max(this.#index - 1, 0)
                 this.render()
                 break
 
