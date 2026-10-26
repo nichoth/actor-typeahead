@@ -252,6 +252,20 @@ test('two instances have distinct ids', async t => {
     t.equal(new Set(ids).size, ids.length, 'ids are unique')
 })
 
+test('the Suggestion count is an empty live region before any Query',
+    async t => {
+        const { el } = await setup()
+        const regions = el.querySelectorAll('[role="status"]')
+
+        t.equal(regions.length, 1, 'one live region')
+        t.ok(
+            !regions[0]?.closest('[role="listbox"]'),
+            'outside the Suggestion list'
+        )
+        t.equal(regions[0]?.parentElement, el, 'a child of the host')
+        t.equal(regions[0]?.textContent, '', 'empty')
+    })
+
 test('the Suggestion list is open exactly when it has Suggestions',
     async t => {
         const { el, input } = await setup()

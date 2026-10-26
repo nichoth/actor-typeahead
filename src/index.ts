@@ -75,6 +75,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #index = -1
     #pressed = false
     #suggestionList:HTMLUListElement|null = null
+    #suggestionCount:HTMLDivElement|null = null
     #timer:ReturnType<typeof setTimeout>|undefined
     #controller:AbortController|null = null
 
@@ -286,6 +287,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
         const list = this.#suggestionList
         if (list.parentNode !== this) this.append(list)
+
+        // the live region exists empty before its first write, because
+        // screen readers often skip a region inserted already filled
+        if (!this.#suggestionCount) {
+            this.#suggestionCount = document.createElement('div')
+            this.#suggestionCount.className = 'suggestion-count'
+            this.#suggestionCount.setAttribute('role', 'status')
+        }
+        const count = this.#suggestionCount
+        if (count.parentNode !== this) this.append(count)
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
             const option = suggestion(actor, i, i === this.#index)
