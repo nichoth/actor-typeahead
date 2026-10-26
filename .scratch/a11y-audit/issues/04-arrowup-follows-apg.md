@@ -39,5 +39,5 @@ deleted.
   the last result" keeps passing)
 - [ ] The keyboard table in the components page describes the new
   ArrowUp behaviour
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass

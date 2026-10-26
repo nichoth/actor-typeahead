@@ -50,7 +50,7 @@ events)
 - [ ] The "pointerup off a Suggestion refocuses the input" test is
   removed along with the behaviour, and no test dispatches
   `pointerdown` or `pointerup`
-- [ ] The architecture pages no longer describe the pressed flag or the
+- [x] The architecture pages no longer describe the pressed flag or the
   pointer listeners
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass

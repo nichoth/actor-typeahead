@@ -31,14 +31,14 @@ there are no Suggestions"), `docs/architecture/public-interface.md`
 
 **Status:** ready-for-agent
 
-- [ ] After a response with zero Actors for a non-empty Query, the
+- [x] After a response with zero Actors for a non-empty Query, the
   Suggestion count equals `el.announce(0)` (ignoring the trailing
   no-break space, as existing tests do) and is not empty
-- [ ] After that response the Suggestion list is closed
-- [ ] A custom `announce` is called with 0 for that response
-- [ ] A failed request (network error or non-2xx) leaves the Suggestion
+- [x] After that response the Suggestion list is closed
+- [x] A custom `announce` is called with 0 for that response
+- [x] A failed request (network error or non-2xx) leaves the Suggestion
   count empty
-- [ ] Moving the Highlighted Suggestion still does not write the
+- [x] Moving the Highlighted Suggestion still does not write the
   Suggestion count (existing `MutationObserver` test keeps passing)
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass
