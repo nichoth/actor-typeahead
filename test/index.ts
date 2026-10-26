@@ -1049,6 +1049,57 @@ test('a click off a Suggestion does nothing', async t => {
     t.equal(isOpen(el), true, 'should stay open')
 })
 
+test('a press on a Suggestion keeps focus on the input', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    // a synthetic press does not move focus, so check the default action
+    const press = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true
+    })
+    t.equal(results(el)[0].dispatchEvent(press), false,
+        'should cancel the mousedown')
+})
+
+test('focus moving to a Suggestion keeps the list open', async t => {
+    const { el, input } = await setup()
+    let selected:Actor|null = null
+    el.on<CustomEvent<Actor>>('select', ev => {
+        selected = ev.detail
+    })
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    // some assistive technology focuses the element it will activate
+    const option = results(el)[1]
+    input.dispatchEvent(new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: option
+    }))
+    t.equal(isOpen(el), true, 'should stay open')
+
+    option.click()
+    t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
+    t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
+    t.equal(isOpen(el), false, 'should close after the click')
+})
+
+test('focus moving out of the host closes the list', async t => {
+    const { el, input } = await setup()
+    const outside = document.createElement('button')
+    document.body.append(outside)
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    results(el)[0].dispatchEvent(new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: outside
+    }))
+    t.equal(isOpen(el), false, 'should close')
+})
+
 test('Enter in the open Suggestion list does not submit a form',
     async t => {
         requests = []
