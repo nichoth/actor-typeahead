@@ -28,11 +28,12 @@ attribute.
 
 | Property | Type | Default | Meaning |
 |----------|------|---------|---------|
-| `announce` | `(count:number) => string` | English, "N Suggestions available" | Suggestion count text |
+| `announce` | `(count:number) => string` | English, "N Suggestions available", or "No Suggestions" for 0 | Suggestion count text |
 
 `announce` is a JS property with no attribute. It is called when a
-Typeahead request settles with at least one Suggestion, and read at
-that time, so it can be set after connect.
+Typeahead request settles, with 0 when no Actor matched the Query, and
+read at that time, so it can be set after connect. A failed request
+does not call it.
 
 ## Events
 
@@ -82,9 +83,11 @@ input's `<label>`s that have one, and is absent when none do. The
 The Suggestion count is created empty on connect, outside the
 Suggestion list, because a closed popover is `display: none` and a
 region inside it would never be read. Each settled Typeahead request
-with Suggestions writes `announce(count)` into it, with a trailing
-no-break space on every other write so an identical count is read
-again. Closing the Suggestion list empties it.
+writes `announce(count)` into it, including `announce(0)` when there
+are no Suggestions, with a trailing no-break space on every other
+write so an identical count is read again. Closing the Suggestion list
+by Escape, Selection, focus out, clearing the Query or a failed
+request empties it.
 
 ## CSS custom properties
 

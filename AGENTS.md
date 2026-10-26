@@ -69,6 +69,10 @@ Single-context layout. See `docs/agents/domain.md`.
   `#request` writes it; `render()` only empties it when there are no
   Suggestions. To prove a key does not write it, observe it with a
   `MutationObserver`, since an identical rewrite leaves the text equal.
+* A response with zero Suggestions writes `announce(0)` after its
+  `render()`, so the Suggestion count is not empty after every close.
+  A test of "closing empties the count" must close by Escape,
+  Selection, focus out, clearing the Query or a failed request.
 * A `waitFor` lambda that never matches hangs the run until tapout's
   timeout ("Tests auto-finished"), hiding which assertion failed. After
   `respond()`, `await sleep(50)` instead when the change may not occur.

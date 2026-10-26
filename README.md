@@ -110,20 +110,24 @@ Both are reflected as properties, so `el.rows = '3'` works too.
 ### Properties
 
 * `announce` -- A function `(count:number) => string` that returns the
-  text screen readers hear when Suggestions arrive. The default is
-  English, "1 Suggestion available" or "N Suggestions available".
-  Replace it to translate; your function handles plurals. It is read
-  each time Suggestions arrive, so you can set it at any time. There is
-  no matching attribute.
+  text screen readers hear when a Typeahead request settles. `count` is
+  the number of Suggestions, and is 0 when nothing matched the Query.
+  The default is English, "No Suggestions", "1 Suggestion available" or
+  "N Suggestions available". Replace it to translate; your function
+  handles plurals and 0. It is read each time a request settles, so you
+  can set it at any time. There is no matching attribute.
 
 ```ts
 const el = document.querySelector('actor-typeahead')!
-el.announce = count => count === 1 ?
-    '1 sugerencia disponible' :
-    `${count} sugerencias disponibles`
+el.announce = count => {
+    if (count === 0) return 'Sin sugerencias'
+    return count === 1 ?
+        '1 sugerencia disponible' :
+        `${count} sugerencias disponibles`
+}
 ```
 
-Nothing is announced when there are no Suggestions.
+A request that fails is not announced.
 
 ### Events
 
