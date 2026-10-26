@@ -82,7 +82,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
-    #suggestionList:HTMLUListElement|null = null
+    #suggestionList:HTMLDivElement|null = null
     #suggestionCount:HTMLDivElement|null = null
     #nbsp = false
     #timer:ReturnType<typeof setTimeout>|undefined
@@ -300,7 +300,7 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
      */
     render () {
         if (!this.#suggestionList) {
-            this.#suggestionList = document.createElement('ul')
+            this.#suggestionList = document.createElement('div')
             this.#suggestionList.className = 'suggestion-list'
             this.#suggestionList.id = `${this.#id}-list`
             this.#suggestionList.setAttribute('role', 'listbox')
@@ -394,13 +394,18 @@ function suggestion (
     actor:Actor,
     index:number,
     active:boolean
-):HTMLLIElement {
-    const li = document.createElement('li')
-    li.className = 'suggestion'
-    li.setAttribute('role', 'option')
-    li.setAttribute('aria-selected', String(active))
-    li.dataset.index = String(index)
-    li.dataset.handle = actor.handle
+):HTMLButtonElement {
+    const button = document.createElement('button')
+    // a button, so every input method can activate it, but not a
+    // submit button, and out of the tab order, because focus stays on
+    // the Authored input
+    button.type = 'button'
+    button.tabIndex = -1
+    button.className = 'suggestion'
+    button.setAttribute('role', 'option')
+    button.setAttribute('aria-selected', String(active))
+    button.dataset.index = String(index)
+    button.dataset.handle = actor.handle
 
     const avatar = document.createElement('div')
     avatar.className = 'avatar'
@@ -415,9 +420,9 @@ function suggestion (
     handle.textContent = actor.handle
 
     avatar.append(img)
-    li.append(avatar, handle)
+    button.append(avatar, handle)
 
-    return li
+    return button
 }
 
 /**

@@ -12,7 +12,7 @@ Sources: [`src/index.ts`](../../src/index.ts),
 | `ActorTypeahead.define()` | `src/index.ts`, module scope | Registers the tag as an import side effect. A no-op if already registered |
 | `ANCHORED` | `src/index.ts`, module-private | `true` when `CSS.supports('anchor-scope: --a')`. Gates the `popover` attribute and the anchored layout |
 | `instances` | `src/index.ts`, module-private | Counter that gives each instance its id prefix, `#id` |
-| `suggestion()` | `src/index.ts`, module-private | Builds one Suggestion, an `li[role="option"]`, from an Actor |
+| `suggestion()` | `src/index.ts`, module-private | Builds one Suggestion, a `button[role="option"]`, from an Actor |
 | `parseActors()`, `isRecord()` | `src/index.ts`, module-private | Narrow the untrusted response body to `Actor[]` ([ADR-005](../adr/ADR-005-typeahead-responses-are-untrusted.md)) |
 | Stylesheet | `src/index.css` | Default look and the custom property API ([ADR-002](../adr/ADR-002-public-css-api.md)) |
 
@@ -73,9 +73,14 @@ the event target, found with `closest('[role="option"]')`. A click
 inside the list but not on a Suggestion does nothing. `click` fires
 for every input method, including the synthetic click that screen
 readers in browse mode, voice control and switch access send with no
-pointer events, and only for the primary button. A Suggestion is an
-`li[role="option"]`, not a button, so a click on it never submits a
-form.
+pointer events, and only for the primary button. A Suggestion is a
+`<button type="button" role="option" tabindex="-1">`: a native button,
+so every input method can activate it, with the option role, so it is
+still a combobox option. Keep both halves. `type="button"` keeps a
+click from submitting a surrounding form, and `tabindex="-1"` keeps it
+out of the tab order, because focus stays on the Authored input. The
+Suggestion list is a `div[role="listbox"]`, since a `ul` may only
+contain `li`.
 
 `mousedown` on the Suggestion list is canceled, so a press or a tap
 never moves focus off the Authored input.

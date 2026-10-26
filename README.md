@@ -186,14 +186,15 @@ of it. The Suggestion list markup is:
     <input role="combobox" aria-autocomplete="list" aria-expanded="true"
         aria-controls="actor-typeahead-1-list"
         aria-activedescendant="actor-typeahead-1-option-0">
-    <ul class="suggestion-list" id="actor-typeahead-1-list"
+    <div class="suggestion-list" id="actor-typeahead-1-list"
         role="listbox">
-        <li class="suggestion" id="actor-typeahead-1-option-0"
-            role="option" aria-selected="true">
+        <button type="button" class="suggestion"
+            id="actor-typeahead-1-option-0" role="option"
+            tabindex="-1" aria-selected="true">
             <div class="avatar"><img class="img" alt=""></div>
             <span class="handle"></span>
-        </li>
-    </ul>
+        </button>
+    </div>
     <!-- visually hidden, announces how many Suggestions arrived -->
     <div class="suggestion-count" role="status"></div>
 </actor-typeahead>

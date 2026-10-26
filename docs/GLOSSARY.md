@@ -29,8 +29,9 @@ supported it is a manual popover in the top layer. _Avoid_: menu,
 dropdown, results.
 
 **Suggestion** -- One Actor offered as a possible completion for the
-current Query: an avatar and a Handle. The `.suggestion` class, an
-`<li role="option">`. _Avoid_: row, result, item, user.
+current Query: an avatar and a Handle. The `.suggestion` class, a
+`<button role="option">` inside the Suggestion list's
+`<div role="listbox">`. _Avoid_: row, result, item, user.
 
 **Highlighted Suggestion** -- The Suggestion the user has moved to with
 the arrow or Page keys, which Enter will select. At most one at a time,

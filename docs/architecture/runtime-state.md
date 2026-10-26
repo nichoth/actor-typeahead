@@ -16,7 +16,7 @@ else is per instance.
 | `#id` | `string` | Per-instance id prefix, `actor-typeahead-<n>`. The Suggestion list id and every Suggestion id start with it | Never |
 | `#actors` | `Actor[]` | Suggestions for the latest response. Empty means the Suggestion list is closed | Escape, Selection, empty Query, `focusout` out of the Host element |
 | `#index` | `number` | Position of the Highlighted Suggestion. `-1` means none | Every new response, and every reset of `#actors` |
-| `#suggestionList` | `HTMLUListElement \| null` | The Suggestion list element, created on first `render()` and reused | Never |
+| `#suggestionList` | `HTMLDivElement \| null` | The Suggestion list element, created on first `render()` and reused | Never |
 | `#timer` | `ReturnType<typeof setTimeout> \| undefined` | The debounce timer for the next Typeahead request. `undefined` when none is pending | Its own firing, `#cancel()` (each non-empty Query, every reset of `#actors`, Enter with nothing Highlighted, `disconnectedCallback()`) |
 | `#controller` | `AbortController \| null` | Aborts the in-flight Typeahead request. `null` before the first request and after `#cancel()`. After a response renders it still holds that request's controller, which is harmless to abort | `#cancel()`, which aborts it first. A new request replaces it |
 
