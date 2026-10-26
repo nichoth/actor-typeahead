@@ -54,6 +54,7 @@ The component renders into light DOM
         aria-controls="actor-typeahead-1-list"
         aria-expanded="true"
         aria-activedescendant="actor-typeahead-1-option-0">
+    <!-- named like the input, by aria-labelledby or aria-label -->
     <div class="suggestion-list" id="actor-typeahead-1-list"
         role="listbox" popover="manual" aria-labelledby="...">
         <button type="button" class="suggestion"
@@ -75,8 +76,15 @@ is open. `aria-activedescendant` names the Highlighted Suggestion, and
 is removed when nothing is Highlighted. Every Suggestion has
 `aria-selected`, `"true"` only on the Highlighted one.
 
-`aria-labelledby` on the Suggestion list lists the ids of the Authored
-input's `<label>`s that have one, and is absent when none do. The
+On every render the Suggestion list copies the Authored input's name
+source, in the order of accessible name computation: the input's
+`aria-labelledby` as is, then its `aria-label`, then its `<label>`s.
+When every label has an `id`, the list's `aria-labelledby` references
+them; otherwise the list's `aria-label` is their trimmed text, joined
+with a space, leaving out the Host element's content when a label wraps
+it. The list carries at most one of the two attributes, and neither
+when the input has no name source. The component never writes on the
+page's `<label>`s (ADR-004). The
 `popover` attribute is set only when `ANCHORED` (the browser supports
 `anchor-scope`). Ids come from a per-instance prefix,
 `actor-typeahead-<n>`, so several instances on a page never collide.

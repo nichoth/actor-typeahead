@@ -98,6 +98,13 @@ Single-context layout. See `docs/agents/domain.md`.
   for an index that has a Suggestion, so a bad `#index` with no
   Suggestions is invisible. Break key handling with Suggestions open
   when proving a keyboard test can fail.
+* The Suggestion list's name comes from `nameSource()` in
+  `src/index.ts`, recomputed on every `render()`. It only reads the
+  page's `<label>`s, never writes them. A `<label>` may wrap the Host
+  element, so label text must skip the Host's content (Suggestions and
+  the Suggestion count).
+* To iterate on one test, `test.only` works in tapzero; drop it before
+  committing, or `npm test` runs only that test.
 * The keyboard table in `docs/architecture/components.md` must match
   `#onkeydown`; change them together.
 

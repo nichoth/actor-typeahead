@@ -202,8 +202,11 @@ of it. The Suggestion list markup is:
 
 `aria-selected="true"` marks the Suggestion highlighted with the
 keyboard. The input also gets `autocomplete="off"` unless you set
-`autocomplete` yourself. If the input has a `<label>` with an `id`, the
-Suggestion list is labelled by it.
+`autocomplete` yourself. The Suggestion list gets the same name as the
+input, from the input's `aria-labelledby`, its `aria-label`, or its
+`<label>`s, in that order. Your labels do not need an `id`: when any
+label lacks one, the list gets the label text as its `aria-label`. The
+component never writes attributes on your labels.
 
 ### Avoid a flash of undefined content
 
