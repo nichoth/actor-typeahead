@@ -14,7 +14,7 @@ translatable text.
 `announce` property, its JSDoc), `src/index.css`, `test/index.ts`,
 `README.md`, `docs/GLOSSARY.md`, `docs/architecture/public-interface.md`
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Decisions
 
