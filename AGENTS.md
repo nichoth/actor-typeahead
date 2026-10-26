@@ -64,6 +64,11 @@ Single-context layout. See `docs/agents/domain.md`.
   page listener calls `preventDefault()`. A test cannot observe an
   unhandled rejection and still pass; `rejections()` only proves there
   were none.
+* Selection with the pointer is a `click` on the Suggestion list, so
+  tests select with `option.click()`, never pointer events. Synthetic
+  mouse events do not move focus: test that a press keeps focus by
+  checking that a cancelable `mousedown` is canceled. To fake focus
+  moving onto a Suggestion, dispatch `focusout` with `relatedTarget`.
 * `render()` runs on every arrow and Page key, so it must not write the
   Suggestion count (`[role="status"]`). Only the response path in
   `#request` writes it; `render()` only empties it when there are no
