@@ -82,7 +82,6 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
-    #pressed = false
     #suggestionList:HTMLUListElement|null = null
     #suggestionCount:HTMLDivElement|null = null
     #nbsp = false
@@ -120,15 +119,16 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 break
 
             case 'focusout':
-                this.#onfocusout()
+                if (evt instanceof FocusEvent) this.#onfocusout(evt)
                 break
 
-            case 'pointerdown':
-                this.#pressed = true
+            case 'mousedown':
+                // a press or a tap keeps focus on the Authored input
+                evt.preventDefault()
                 break
 
-            case 'pointerup':
-                this.#onpointerup(evt)
+            case 'click':
+                this.#onclick(evt)
                 break
         }
     }
@@ -243,22 +243,21 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             (this.#nbsp ? '\u00a0' : '')
     }
 
-    #onfocusout () {
-        if (this.#pressed) return
+    /**
+     * Close only when focus leaves the host. Some assistive technology
+     * focuses a Suggestion before it sends the click that selects it.
+     */
+    #onfocusout (evt:FocusEvent) {
+        const next = evt.relatedTarget
+        if (next instanceof Node && this.contains(next)) return
         this.#clear()
     }
 
-    #onpointerup (evt:Event) {
-        this.#pressed = false
-
+    #onclick (evt:Event) {
         const option = evt.target instanceof Element ?
             evt.target.closest<HTMLElement>('[role="option"]') :
             null
-
-        if (!option) {
-            this.qs('input')?.focus()
-            return
-        }
+        if (!option) return
 
         this.#select(Number(option.dataset.index))
     }
@@ -306,8 +305,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             this.#suggestionList.id = `${this.#id}-list`
             this.#suggestionList.setAttribute('role', 'listbox')
             if (ANCHORED) this.#suggestionList.popover = 'manual'
-            this.#suggestionList.addEventListener('pointerdown', this)
-            this.#suggestionList.addEventListener('pointerup', this)
+            this.#suggestionList.addEventListener('mousedown', this)
+            this.#suggestionList.addEventListener('click', this)
         }
 
         const list = this.#suggestionList

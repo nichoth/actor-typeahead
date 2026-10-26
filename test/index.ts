@@ -528,10 +528,8 @@ test('the Suggestion list closes', async t => {
 
     type(input, 'ali')
     await waitFor(OPTION)
-    const option = results(el)[0]
-    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
-    t.equal(isOpen(el), false, 'after pointer selection')
+    results(el)[0].click()
+    t.equal(isOpen(el), false, 'after click selection')
 
     type(input, 'ali')
     await waitFor(OPTION)
@@ -1017,7 +1015,7 @@ test('Escape closes the menu', async t => {
     t.equal(input.value, 'ali', 'should leave the input alone')
 })
 
-test('select with the pointer', async t => {
+test('select with a click', async t => {
     const { el, input } = await setup()
     let selected:Actor|null = null
     el.on<CustomEvent<Actor>>('select', ev => {
@@ -1027,28 +1025,28 @@ test('select with the pointer', async t => {
     type(input, 'ali')
     await waitFor(OPTION)
 
-    const option = results(el)[1]
-    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    // assistive technology activates with a click and no pointer events
+    results(el)[1].click()
 
     t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
     t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
     t.equal(results(el).length, 0, 'should close the menu')
+    t.equal(isOpen(el), false, 'should close the Suggestion list')
+    t.equal(document.activeElement, input, 'should focus the input')
 })
 
-test('pointerup off a Suggestion refocuses the input', async t => {
+test('a click off a Suggestion does nothing', async t => {
     const { el, input } = await setup()
+    let selections = 0
+    el.on('select', () => selections++)
+
     type(input, 'ali')
     await waitFor(OPTION)
+    el.querySelector<HTMLElement>('[role="listbox"]')!.click()
 
-    // a real press moves focus off the input between down and up
-    const list = el.querySelector('[role="listbox"]')!
-    list.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    input.blur()
-    list.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
-
-    t.equal(document.activeElement, input, 'should focus the input')
-    t.equal(results(el).length, ACTORS.length, 'should stay open')
+    t.equal(selections, 0, 'should not select')
+    t.equal(input.value, 'ali', 'should leave the input alone')
+    t.equal(isOpen(el), true, 'should stay open')
 })
 
 test('Enter in the open Suggestion list does not submit a form',
