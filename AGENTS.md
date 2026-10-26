@@ -75,6 +75,11 @@ Single-context layout. See `docs/agents/domain.md`.
 * tapout's `--timeout` covers the whole run, not one test. Each
   debounced `type()` adds time, so raise it in the `test` script if
   the suite grows past it ("Tests timed out").
+* With `deferredFetch()`, a request that is never settled leaves the
+  Suggestion list closed, so "stays closed" passes vacuously. Respond
+  to any stray request before asserting the list is closed. To prove
+  a coverage-only test can fail, break the code temporarily (e.g.
+  drop `#cancel()` from `#clear()`) and run it.
 
 ## Browser support
 
