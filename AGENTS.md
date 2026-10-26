@@ -69,6 +69,11 @@ Single-context layout. See `docs/agents/domain.md`.
   mouse events do not move focus: test that a press keeps focus by
   checking that a cancelable `mousedown` is canceled. To fake focus
   moving onto a Suggestion, dispatch `focusout` with `relatedTarget`.
+* A Suggestion is removed during its own `click` (Selection empties
+  the list), so the browser's default action never runs on it. A test
+  that a Suggestion's default action is harmless (e.g. no form submit)
+  must stop the click before it reaches the component, for example with
+  a capturing listener on the form that calls `stopPropagation()`.
 * `render()` runs on every arrow and Page key, so it must not write the
   Suggestion count (`[role="status"]`). Only the response path in
   `#request` writes it; `render()` only empties it when there are no

@@ -114,7 +114,7 @@ function announced (el:ActorTypeahead):string {
     return text.replace(/\u00a0$/, '')
 }
 
-function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
+function results (el:ActorTypeahead):NodeListOf<HTMLElement> {
     return el.querySelectorAll('[role="option"]')
 }
 
@@ -1127,6 +1127,44 @@ test('Enter in the open Suggestion list does not submit a form',
         t.equal(submits, 0, 'should not submit')
         t.equal(input.value, ACTORS[0].handle, 'should select instead')
     })
+
+test('a click on a Suggestion in a form does not submit it',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        results(el)[0].click()
+
+        t.equal(submits(), 0, 'should not submit')
+        t.equal(input.value, ACTORS[0].handle, 'should select instead')
+    })
+
+test('a Suggestion never submits a form, even unhandled',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        // the click never reaches the component, so the Suggestion is
+        // still connected when the browser runs its default action
+        input.form!.addEventListener('click', ev => {
+            ev.stopPropagation()
+        }, { capture: true })
+        results(el)[0].click()
+
+        t.equal(submits(), 0, 'should not submit')
+        t.equal(input.value, 'ali', 'should not select')
+    })
+
+test('Suggestions are not in the tab order', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    const tabbable = [...results(el)].filter(o => o.tabIndex >= 0)
+    t.equal(tabbable.length, 0, 'should keep every Suggestion out')
+})
 
 test('Enter with the Suggestion list closed submits a form',
     async t => {
