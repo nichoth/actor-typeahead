@@ -20,24 +20,24 @@ See `.scratch/a11y-audit/spec.md`.
 "moving the Highlighted Suggestion is not announced", new ArrowUp
 tests), `docs/architecture/components.md` (keyboard table)
 
-**Status:** ready-for-agent
+**Status:** done
 
 Existing tests that assume the old ArrowUp behaviour are updated, not
 deleted.
 
-- [ ] With Suggestions open and nothing Highlighted, ArrowUp highlights
+- [x] With Suggestions open and nothing Highlighted, ArrowUp highlights
   the last Suggestion (checked through `aria-activedescendant` and
   `aria-selected`, as the existing `checkActive` helper does)
-- [ ] With the first Suggestion Highlighted, ArrowUp removes
+- [x] With the first Suggestion Highlighted, ArrowUp removes
   `aria-activedescendant` and leaves no option with
   `aria-selected="true"`
-- [ ] After that, Enter is not canceled (the `key()` helper returns
+- [x] After that, Enter is not canceled (the `key()` helper returns
   true)
-- [ ] With no Suggestions, ArrowUp leaves the input with no
+- [x] With no Suggestions, ArrowUp leaves the input with no
   `aria-activedescendant` and the Suggestion list closed
-- [ ] ArrowDown still stops at the last Suggestion ("arrow keys stop at
+- [x] ArrowDown still stops at the last Suggestion ("arrow keys stop at
   the last result" keeps passing)
-- [ ] The keyboard table in the components page describes the new
+- [x] The keyboard table in the components page describes the new
   ArrowUp behaviour
 - [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass

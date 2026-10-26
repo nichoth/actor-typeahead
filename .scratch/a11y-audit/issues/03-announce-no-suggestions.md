@@ -29,7 +29,7 @@ there are no Suggestions"), `docs/architecture/public-interface.md`
 (`announce` row and Suggestion count paragraph), `docs/GLOSSARY.md`
 (Suggestion count, which says it is empty while the list is closed)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] After a response with zero Actors for a non-empty Query, the
   Suggestion count equals `el.announce(0)` (ignoring the trailing

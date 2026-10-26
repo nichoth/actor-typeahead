@@ -35,19 +35,19 @@ row), `docs/architecture/build-and-distribution.md` (synthetic event
 list), `docs/GLOSSARY.md` (Selection, if its wording names the pointer
 events)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `click()` on a Suggestion sets the Authored input to its Handle,
+- [x] `click()` on a Suggestion sets the Authored input to its Handle,
   fires `actor-typeahead:select` with the Actor, and closes the
   Suggestion list
-- [ ] A cancelable `mousedown` dispatched on a Suggestion is canceled
-- [ ] A `focusout` from the Authored input whose `relatedTarget` is a
+- [x] A cancelable `mousedown` dispatched on a Suggestion is canceled
+- [x] A `focusout` from the Authored input whose `relatedTarget` is a
   Suggestion leaves the Suggestion list open, and a later `click()` on
   that Suggestion selects it
-- [ ] A `focusout` whose `relatedTarget` is outside the Host element
+- [x] A `focusout` whose `relatedTarget` is outside the Host element
   still closes the Suggestion list and cancels a pending Typeahead
   request (existing close-path tests keep passing)
-- [ ] The "pointerup off a Suggestion refocuses the input" test is
+- [x] The "pointerup off a Suggestion refocuses the input" test is
   removed along with the behaviour, and no test dispatches
   `pointerdown` or `pointerup`
 - [x] The architecture pages no longer describe the pressed flag or the
