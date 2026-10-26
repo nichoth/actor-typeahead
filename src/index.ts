@@ -343,15 +343,12 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             input.setAttribute('aria-controls', list.id)
             input.setAttribute('aria-expanded', String(open))
 
-            const labelledby = input.getAttribute('aria-labelledby') ||
-                [...(input.labels ?? [])]
-                    .map(label => label.id)
-                    .filter(Boolean)
-                    .join(' ')
-            if (labelledby) {
-                list.setAttribute('aria-labelledby', labelledby)
-            } else {
-                list.removeAttribute('aria-labelledby')
+            // the Suggestion list carries at most one of the two
+            const name = nameSource(input)
+            for (const attr of ['aria-labelledby', 'aria-label'] as const) {
+                const value = name[attr]
+                if (value) list.setAttribute(attr, value)
+                else list.removeAttribute(attr)
             }
 
             if (this.#actors[this.#index]) {
@@ -425,6 +422,28 @@ function suggestion (
     button.append(avatar, handle)
 
     return button
+}
+
+/**
+ * What names the Authored input, in the order of accessible name
+ * computation, as the attribute the Suggestion list copies it to.
+ */
+function nameSource (input:HTMLInputElement):{
+    'aria-labelledby'?:string;
+    'aria-label'?:string;
+} {
+    const labelledby = input.getAttribute('aria-labelledby')
+    if (labelledby) return { 'aria-labelledby': labelledby }
+
+    const label = input.getAttribute('aria-label')
+    if (label) return { 'aria-label': label }
+
+    const ids = [...(input.labels ?? [])]
+        .map(label => label.id)
+        .filter(Boolean)
+    if (ids.length) return { 'aria-labelledby': ids.join(' ') }
+
+    return {}
 }
 
 /**
