@@ -114,7 +114,7 @@ function announced (el:ActorTypeahead):string {
     return text.replace(/\u00a0$/, '')
 }
 
-function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
+function results (el:ActorTypeahead):NodeListOf<HTMLElement> {
     return el.querySelectorAll('[role="option"]')
 }
 
@@ -186,6 +186,13 @@ test('aria-activedescendant tracks the highlighted option', async t => {
     checkActive(t, el, input, 1)
     key(input, 'ArrowUp')
     checkActive(t, el, input, 0)
+    key(input, 'ArrowUp')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'removed by ArrowUp on the first option'
+    )
+    key(input, 'ArrowUp')
+    checkActive(t, el, input, ACTORS.length - 1)
 
     key(input, 'Escape')
     t.ok(
@@ -214,6 +221,33 @@ test('autocomplete is off unless the page sets it', async t => {
     )
 })
 
+test('a listbox with no name source has no name', async t => {
+    const { el, input } = await setup()
+    const list = el.querySelector('[role="listbox"]')!
+    t.ok(!list.hasAttribute('aria-label'), 'should have no aria-label')
+    t.ok(
+        !list.hasAttribute('aria-labelledby'),
+        'should have no aria-labelledby'
+    )
+
+    const name = 'Handle'
+    input.setAttribute('aria-label', name)
+    type(input, 'ali')
+    await waitFor(OPTION)
+    t.equal(list.getAttribute('aria-label'), name, 'named once set')
+
+    input.removeAttribute('aria-label')
+    requests = []
+    type(input, 'alic')
+    await waitFor(null, null, () => requests.length ? list : null)
+    await sleep(50)
+    t.ok(
+        !list.hasAttribute('aria-label') &&
+            !list.hasAttribute('aria-labelledby'),
+        'should drop the stale name when the source is removed'
+    )
+})
+
 test('the listbox is labelled by the input\'s label', async t => {
     document.body.innerHTML = `<label id="handle-label" for="handle">
         Handle
@@ -235,6 +269,92 @@ test('the listbox is labelled by the input\'s label', async t => {
         'no label, no aria-labelledby'
     )
 })
+
+test('the listbox copies the input\'s aria-labelledby', async t => {
+    document.body.innerHTML = `<span id="a">Find</span>
+    <span id="b">an account</span>
+    <${ActorTypeahead.TAG}>
+        <input aria-labelledby="a b" aria-label="ignored">
+    </${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const input = el.querySelector('input')!
+    const list = el.querySelector('[role="listbox"]')!
+
+    t.equal(
+        list.getAttribute('aria-labelledby'),
+        input.getAttribute('aria-labelledby'),
+        'should reference what names the input'
+    )
+    t.ok(!list.hasAttribute('aria-label'), 'should have no aria-label')
+})
+
+test('the listbox copies the input\'s aria-label', async t => {
+    document.body.innerHTML = `<label id="handle-label" for="handle">
+        Handle
+    </label>
+    <${ActorTypeahead.TAG}>
+        <input id="handle" aria-label="Find an account">
+    </${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const input = el.querySelector('input')!
+    const list = el.querySelector('[role="listbox"]')!
+
+    t.equal(
+        list.getAttribute('aria-label'),
+        input.getAttribute('aria-label'),
+        'should use the input\'s aria-label'
+    )
+    t.ok(
+        !list.hasAttribute('aria-labelledby'),
+        'should have no aria-labelledby'
+    )
+})
+
+test('the listbox is named by the text of labels without ids',
+    async t => {
+        document.body.innerHTML = `<label for="handle">
+            Handle
+        </label>
+        <${ActorTypeahead.TAG}><input id="handle"></${ActorTypeahead.TAG}>
+        <label for="handle"> on <b>Bluesky</b> </label>`
+        const el = (await waitFor(ActorTypeahead.TAG))!
+        const list = el.querySelector('[role="listbox"]')!
+        const labels = [...document.querySelectorAll('label')]
+        const text = labels.map(label => label.textContent!.trim())
+
+        t.equal(
+            list.getAttribute('aria-label'),
+            text.join(' '),
+            'should be the trimmed label text, joined with a space'
+        )
+        t.ok(
+            !list.hasAttribute('aria-labelledby'),
+            'should have no aria-labelledby'
+        )
+        t.deepEqual(
+            labels.map(label => label.getAttributeNames()),
+            [['for'], ['for']],
+            'should not write attributes on the page\'s labels'
+        )
+    })
+
+test('a wrapping label names the listbox without its Suggestions',
+    async t => {
+        document.body.innerHTML = `<label>
+            <span>Handle</span>
+            <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        </label>`
+        const el = (await waitFor(ActorTypeahead.TAG))!
+        type(el.querySelector('input')!, 'ali')
+        await waitFor(OPTION)
+        const list = el.querySelector('[role="listbox"]')!
+
+        t.equal(
+            list.getAttribute('aria-label'),
+            document.querySelector('label span')!.textContent,
+            'should be only the label\'s own text'
+        )
+    })
 
 test('two instances have distinct ids', async t => {
     requests = []
@@ -302,6 +422,76 @@ test('a custom announce is used', async t => {
     t.equal(announced(el), `count ${ACTORS.length}`, 'its text is used')
 })
 
+test('a request with no Suggestions is announced', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+
+    // start open, so the empty response closes the Suggestion list
+    type(input, 'ali')
+    respond(await requestFor(calls, 'ali'), ACTORS)
+    await waitFor(OPTION)
+    type(input, 'zzz')
+    respond(await requestFor(calls, 'zzz'), [])
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.equal(isOpen(el), false, 'the Suggestion list is closed')
+    t.ok(announced(el), 'should announce')
+    t.equal(announced(el), el.announce(0), 'the announce text for 0')
+})
+
+test('a custom announce is called with 0', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+    const counts:number[] = []
+    el.announce = count => {
+        counts.push(count)
+        return `count ${count}`
+    }
+
+    type(input, 'zzz')
+    respond(await requestFor(calls, 'zzz'), [])
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.deepEqual(counts, [0], 'called with 0')
+    t.equal(announced(el), 'count 0', 'its text is used')
+})
+
+test('a failed request is not announced', async t => {
+    const failures:[string, (call:Deferred) => void][] = [
+        ['a network error', call => {
+            call.reject(new TypeError('Failed to fetch'))
+        }],
+        ['a non-2xx response', call => {
+            call.resolve(new Response(JSON.stringify({ actors: [] }), {
+                status: 500
+            }))
+        }],
+    ]
+
+    for (const [name, fail] of failures) {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+
+        // start announced, so the failure has a count to clear
+        type(input, 'ali')
+        respond(await requestFor(calls, 'ali'), ACTORS)
+        await waitFor(OPTION)
+        type(input, 'zzz')
+        fail(await requestFor(calls, 'zzz'))
+        await sleep(50)
+
+        window.fetch = fakeFetch
+        t.equal(isOpen(el), false, `closed after ${name}`)
+        t.equal(
+            el.querySelector('[role="status"]')!.textContent,
+            '',
+            `empty after ${name}`
+        )
+    }
+})
+
 test('the same count is announced again', async t => {
     const { el, input } = await setup()
     const calls = deferredFetch()
@@ -348,6 +538,37 @@ test('moving the Highlighted Suggestion is not announced',
         t.equal(writes, 0, 'the live region is not written')
     })
 
+test('a key after no Suggestions keeps the announcement',
+    async t => {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+
+        type(input, 'zzz')
+        respond(await requestFor(calls, 'zzz'), [])
+        await sleep(50)
+        window.fetch = fakeFetch
+
+        const region = el.querySelector('[role="status"]')!
+        const before = region.textContent
+        let writes = 0
+        new MutationObserver(records => { writes += records.length })
+            .observe(region, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            })
+
+        for (const name of ['ArrowDown', 'ArrowUp', 'PageDown',
+            'PageUp']) {
+            key(input, name)
+        }
+        await sleep(0)
+
+        t.ok(before, 'starts announced')
+        t.equal(region.textContent, before, 'same content')
+        t.equal(writes, 0, 'the live region is not written')
+    })
+
 test('closing the Suggestion list empties the live region',
     async t => {
         const closes:[string, (
@@ -365,10 +586,6 @@ test('closing the Suggestion list empties the live region',
                 }))
             }],
             ['clearing the Query', input => type(input, '')],
-            ['an empty response', async (input, calls) => {
-                type(input, 'zzz')
-                respond(await requestFor(calls, 'zzz'), [])
-            }],
             ['a failed request', async (input, calls) => {
                 type(input, 'zzz')
                 const call = await requestFor(calls, 'zzz')
@@ -455,10 +672,8 @@ test('the Suggestion list closes', async t => {
 
     type(input, 'ali')
     await waitFor(OPTION)
-    const option = results(el)[0]
-    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
-    t.equal(isOpen(el), false, 'after pointer selection')
+    results(el)[0].click()
+    t.equal(isOpen(el), false, 'after click selection')
 
     type(input, 'ali')
     await waitFor(OPTION)
@@ -886,6 +1101,53 @@ test('arrow keys stop at the last result', async t => {
     t.equal(results(el).length, 0, 'should close the menu')
 })
 
+test('ArrowUp with nothing Highlighted highlights the last Suggestion',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        t.equal(key(input, 'ArrowUp'), false, 'should cancel the keydown')
+        checkActive(t, el, input, ACTORS.length - 1)
+    })
+
+test('ArrowUp with no Suggestions does nothing', async t => {
+    const { el, input } = await setup()
+    key(input, 'ArrowUp')
+
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'should have no aria-activedescendant'
+    )
+    t.equal(isOpen(el), false, 'should stay closed')
+    t.equal(results(el).length, 0, 'should have no options')
+})
+
+test('ArrowUp on the first Suggestion clears the Highlight', async t => {
+    const { el, input, submits } = await formSetup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+    key(input, 'ArrowDown')
+    checkActive(t, el, input, 0)
+
+    t.equal(key(input, 'ArrowUp'), false, 'should cancel the keydown')
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'should remove aria-activedescendant'
+    )
+    const selected = [...results(el)].filter(option => {
+        return option.getAttribute('aria-selected') === 'true'
+    })
+    t.equal(selected.length, 0, 'no option is selected')
+    t.equal(isOpen(el), true, 'should stay open')
+
+    const passed = key(input, 'Enter')
+    t.equal(passed, true, 'Enter should not be canceled')
+    if (passed) input.form!.requestSubmit()
+    t.equal(submits(), 1, 'should submit the form')
+    t.equal(input.value, 'ali', 'should not select')
+})
+
 test('Escape closes the menu', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
@@ -897,7 +1159,7 @@ test('Escape closes the menu', async t => {
     t.equal(input.value, 'ali', 'should leave the input alone')
 })
 
-test('select with the pointer', async t => {
+test('select with a click', async t => {
     const { el, input } = await setup()
     let selected:Actor|null = null
     el.on<CustomEvent<Actor>>('select', ev => {
@@ -907,28 +1169,79 @@ test('select with the pointer', async t => {
     type(input, 'ali')
     await waitFor(OPTION)
 
-    const option = results(el)[1]
-    option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    option.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    // assistive technology activates with a click and no pointer events
+    results(el)[1].click()
 
     t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
     t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
     t.equal(results(el).length, 0, 'should close the menu')
+    t.equal(isOpen(el), false, 'should close the Suggestion list')
+    t.equal(document.activeElement, input, 'should focus the input')
 })
 
-test('pointerup off a Suggestion refocuses the input', async t => {
+test('a click off a Suggestion does nothing', async t => {
+    const { el, input } = await setup()
+    let selections = 0
+    el.on('select', () => selections++)
+
+    type(input, 'ali')
+    await waitFor(OPTION)
+    el.querySelector<HTMLElement>('[role="listbox"]')!.click()
+
+    t.equal(selections, 0, 'should not select')
+    t.equal(input.value, 'ali', 'should leave the input alone')
+    t.equal(isOpen(el), true, 'should stay open')
+})
+
+test('a press on a Suggestion keeps focus on the input', async t => {
     const { el, input } = await setup()
     type(input, 'ali')
     await waitFor(OPTION)
 
-    // a real press moves focus off the input between down and up
-    const list = el.querySelector('[role="listbox"]')!
-    list.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    input.blur()
-    list.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
+    // a synthetic press does not move focus, so check the default action
+    const press = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true
+    })
+    t.equal(results(el)[0].dispatchEvent(press), false,
+        'should cancel the mousedown')
+})
 
-    t.equal(document.activeElement, input, 'should focus the input')
-    t.equal(results(el).length, ACTORS.length, 'should stay open')
+test('focus moving to a Suggestion keeps the list open', async t => {
+    const { el, input } = await setup()
+    let selected:Actor|null = null
+    el.on<CustomEvent<Actor>>('select', ev => {
+        selected = ev.detail
+    })
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    // some assistive technology focuses the element it will activate
+    const option = results(el)[1]
+    input.dispatchEvent(new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: option
+    }))
+    t.equal(isOpen(el), true, 'should stay open')
+
+    option.click()
+    t.equal(input.value, ACTORS[1].handle, 'should fill in the input')
+    t.deepEqual(selected, ACTORS[1], 'should emit the selected actor')
+    t.equal(isOpen(el), false, 'should close after the click')
+})
+
+test('focus moving out of the host closes the list', async t => {
+    const { el, input } = await setup()
+    const outside = document.createElement('button')
+    document.body.append(outside)
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    results(el)[0].dispatchEvent(new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: outside
+    }))
+    t.equal(isOpen(el), false, 'should close')
 })
 
 test('Enter in the open Suggestion list does not submit a form',
@@ -958,6 +1271,44 @@ test('Enter in the open Suggestion list does not submit a form',
         t.equal(submits, 0, 'should not submit')
         t.equal(input.value, ACTORS[0].handle, 'should select instead')
     })
+
+test('a click on a Suggestion in a form does not submit it',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        results(el)[0].click()
+
+        t.equal(submits(), 0, 'should not submit')
+        t.equal(input.value, ACTORS[0].handle, 'should select instead')
+    })
+
+test('a Suggestion never submits a form, even unhandled',
+    async t => {
+        const { el, input, submits } = await formSetup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+
+        // the click never reaches the component, so the Suggestion is
+        // still connected when the browser runs its default action
+        input.form!.addEventListener('click', ev => {
+            ev.stopPropagation()
+        }, { capture: true })
+        results(el)[0].click()
+
+        t.equal(submits(), 0, 'should not submit')
+        t.equal(input.value, 'ali', 'should not select')
+    })
+
+test('Suggestions are not in the tab order', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    const tabbable = [...results(el)].filter(o => o.tabIndex >= 0)
+    t.equal(tabbable.length, 0, 'should keep every Suggestion out')
+})
 
 test('Enter with the Suggestion list closed submits a form',
     async t => {

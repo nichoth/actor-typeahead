@@ -21,18 +21,18 @@ have no ids)
 **Touches:** `example/index.html`, `example/index.ts` (the FOUCE block
 at the bottom)
 
-**Status:** ready-for-agent
+**Status:** done
 
 No automated tests: per the project rules, docs and the example page
 are not tested. Verify by hand with the dev server, and stop the server
 afterwards.
 
-- [ ] All visible page content is inside `<main>`, and the page has
+- [x] All visible page content is inside `<main>`, and the page has
   exactly one `<h1>`
-- [ ] With an error thrown in the page script before the FOUCE block,
+- [x] With an error thrown in the page script before the FOUCE block,
   the page still becomes visible
-- [ ] The example `<label>`s have no `id`
-- [ ] An axe run on the example page reports no violations at rest,
+- [x] The example `<label>`s have no `id`
+- [x] An axe run on the example page reports no violations at rest,
   with the Suggestion list open, and with a Suggestion Highlighted
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass

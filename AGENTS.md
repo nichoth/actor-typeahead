@@ -64,11 +64,28 @@ Single-context layout. See `docs/agents/domain.md`.
   page listener calls `preventDefault()`. A test cannot observe an
   unhandled rejection and still pass; `rejections()` only proves there
   were none.
+* Selection with the pointer is a `click` on the Suggestion list, so
+  tests select with `option.click()`, never pointer events. Synthetic
+  mouse events do not move focus: test that a press keeps focus by
+  checking that a cancelable `mousedown` is canceled. To fake focus
+  moving onto a Suggestion, dispatch `focusout` with `relatedTarget`.
+* A Suggestion is removed during its own `click` (Selection empties
+  the list), so the browser's default action never runs on it. A test
+  that a Suggestion's default action is harmless (e.g. no form submit)
+  must stop the click before it reaches the component, for example with
+  a capturing listener on the form that calls `stopPropagation()`.
 * `render()` runs on every arrow and Page key, so it must not write the
   Suggestion count (`[role="status"]`). Only the response path in
   `#request` writes it; `render()` only empties it when there are no
   Suggestions. To prove a key does not write it, observe it with a
   `MutationObserver`, since an identical rewrite leaves the text equal.
+* With no Suggestions, arrow and Page keys return before `render()`,
+  because its empty-list path would erase a "No Suggestions"
+  announcement. Keep any new key that only moves the Highlight there.
+* A response with zero Suggestions writes `announce(0)` after its
+  `render()`, so the Suggestion count is not empty after every close.
+  A test of "closing empties the count" must close by Escape,
+  Selection, focus out, clearing the Query or a failed request.
 * A `waitFor` lambda that never matches hangs the run until tapout's
   timeout ("Tests auto-finished"), hiding which assertion failed. After
   `respond()`, `await sleep(50)` instead when the change may not occur.
@@ -80,6 +97,19 @@ Single-context layout. See `docs/agents/domain.md`.
   to any stray request before asserting the list is closed. To prove
   a coverage-only test can fail, break the code temporarily (e.g.
   drop `#cancel()` from `#clear()`) and run it.
+* `render()` writes `aria-activedescendant` and `aria-selected` only
+  for an index that has a Suggestion, so a bad `#index` with no
+  Suggestions is invisible. Break key handling with Suggestions open
+  when proving a keyboard test can fail.
+* The Suggestion list's name comes from `nameSource()` in
+  `src/index.ts`, recomputed on every `render()`. It only reads the
+  page's `<label>`s, never writes them. A `<label>` may wrap the Host
+  element, so label text must skip the Host's content (Suggestions and
+  the Suggestion count).
+* To iterate on one test, `test.only` works in tapzero; drop it before
+  committing, or `npm test` runs only that test.
+* The keyboard table in `docs/architecture/components.md` must match
+  `#onkeydown`; change them together.
 
 ## Browser support
 
@@ -94,3 +124,13 @@ Single-context layout. See `docs/agents/domain.md`.
   checked by hand: set `ANCHORED` to `false` and use the example page,
   which has instances in a clipping container and near the viewport
   bottom.
+* stylelint wants CSS keywords in lowercase (`currentcolor`, not
+  `currentColor`); system colours like `Highlight` are accepted as is.
+* Style-only changes are checked by hand: run `npx vite`, stub
+  `window.fetch` in the page, then read computed styles. Chrome
+  DevTools forced-colors emulation covers Windows High Contrast.
+* The example page must pass axe at rest, open and Highlighted.
+  `axe-core` is in `node_modules`; serve a temporary copy from
+  `example/` (delete it afterwards), stub `**/xrpc/**`, then inject it.
+  Its `reduce-fouce` class is also removed by an inline head script on
+  any `error` or after a timeout, so keep that script when editing it.

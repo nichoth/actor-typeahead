@@ -28,11 +28,12 @@ attribute.
 
 | Property | Type | Default | Meaning |
 |----------|------|---------|---------|
-| `announce` | `(count:number) => string` | English, "N Suggestions available" | Suggestion count text |
+| `announce` | `(count:number) => string` | English, "N Suggestions available", or "No Suggestions" for 0 | Suggestion count text |
 
 `announce` is a JS property with no attribute. It is called when a
-Typeahead request settles with at least one Suggestion, and read at
-that time, so it can be set after connect.
+Typeahead request settles, with 0 when no Actor matched the Query, and
+read at that time, so it can be set after connect. A failed request
+does not call it.
 
 ## Events
 
@@ -53,15 +54,17 @@ The component renders into light DOM
         aria-controls="actor-typeahead-1-list"
         aria-expanded="true"
         aria-activedescendant="actor-typeahead-1-option-0">
-    <ul class="suggestion-list" id="actor-typeahead-1-list"
+    <!-- named like the input, by aria-labelledby or aria-label -->
+    <div class="suggestion-list" id="actor-typeahead-1-list"
         role="listbox" popover="manual" aria-labelledby="...">
-        <li class="suggestion" id="actor-typeahead-1-option-0"
-            role="option" aria-selected="true"
+        <button type="button" class="suggestion"
+            id="actor-typeahead-1-option-0" role="option"
+            tabindex="-1" aria-selected="true"
             data-index="0" data-handle="...">
             <div class="avatar"><img class="img" alt=""></div>
             <span class="handle"></span>
-        </li>
-    </ul>
+        </button>
+    </div>
     <div class="suggestion-count" role="status"></div>
 </actor-typeahead>
 ```
@@ -73,8 +76,15 @@ is open. `aria-activedescendant` names the Highlighted Suggestion, and
 is removed when nothing is Highlighted. Every Suggestion has
 `aria-selected`, `"true"` only on the Highlighted one.
 
-`aria-labelledby` on the Suggestion list lists the ids of the Authored
-input's `<label>`s that have one, and is absent when none do. The
+On every render the Suggestion list copies the Authored input's name
+source, in the order of accessible name computation: the input's
+`aria-labelledby` as is, then its `aria-label`, then its `<label>`s.
+When every label has an `id`, the list's `aria-labelledby` references
+them; otherwise the list's `aria-label` is their trimmed text, joined
+with a space, leaving out the Host element's content when a label wraps
+it. The list carries at most one of the two attributes, and neither
+when the input has no name source. The component never writes on the
+page's `<label>`s (ADR-004). The
 `popover` attribute is set only when `ANCHORED` (the browser supports
 `anchor-scope`). Ids come from a per-instance prefix,
 `actor-typeahead-<n>`, so several instances on a page never collide.
@@ -82,9 +92,11 @@ input's `<label>`s that have one, and is absent when none do. The
 The Suggestion count is created empty on connect, outside the
 Suggestion list, because a closed popover is `display: none` and a
 region inside it would never be read. Each settled Typeahead request
-with Suggestions writes `announce(count)` into it, with a trailing
-no-break space on every other write so an identical count is read
-again. Closing the Suggestion list empties it.
+writes `announce(count)` into it, including `announce(0)` when there
+are no Suggestions, with a trailing no-break space on every other
+write so an identical count is read again. Closing the Suggestion list
+by Escape, Selection, focus out, clearing the Query or a failed
+request empties it.
 
 ## CSS custom properties
 

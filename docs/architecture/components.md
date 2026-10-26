@@ -12,7 +12,7 @@ Sources: [`src/index.ts`](../../src/index.ts),
 | `ActorTypeahead.define()` | `src/index.ts`, module scope | Registers the tag as an import side effect. A no-op if already registered |
 | `ANCHORED` | `src/index.ts`, module-private | `true` when `CSS.supports('anchor-scope: --a')`. Gates the `popover` attribute and the anchored layout |
 | `instances` | `src/index.ts`, module-private | Counter that gives each instance its id prefix, `#id` |
-| `suggestion()` | `src/index.ts`, module-private | Builds one Suggestion, an `li[role="option"]`, from an Actor |
+| `suggestion()` | `src/index.ts`, module-private | Builds one Suggestion, a `button[role="option"]`, from an Actor |
 | `parseActors()`, `isRecord()` | `src/index.ts`, module-private | Narrow the untrusted response body to `Actor[]` ([ADR-005](../adr/ADR-005-typeahead-responses-are-untrusted.md)) |
 | Stylesheet | `src/index.css` | Default look and the custom property API ([ADR-002](../adr/ADR-002-public-css-api.md)) |
 
@@ -28,7 +28,7 @@ Every listener is the element itself, dispatched through
 | Target | Events | Bound in |
 |--------|--------|----------|
 | Host element | `input`, `keydown`, `focusout` | `constructor` |
-| Suggestion list | `pointerdown`, `pointerup` | `render()`, when the list is first created |
+| Suggestion list | `mousedown`, `click` | `render()`, when the list is first created |
 
 Host listeners rely on events bubbling from the Authored input
 ([ADR-004](../adr/ADR-004-enhance-the-authored-input.md)).
@@ -56,26 +56,39 @@ Host listeners rely on events bubbling from the Authored input
 Arrow and Page keys always call `preventDefault()`. Enter and Escape
 call it only when the component acts on them, so with nothing to do
 they keep their usual effect: Enter submits a surrounding form and
-Escape closes a surrounding `<dialog>`.
+Escape closes a surrounding `<dialog>`. With no Suggestions, arrow
+and Page keys do nothing else, so they leave the Suggestion count as
+it is.
 
 | Key | Effect |
 |-----|--------|
 | ArrowDown | Highlight the next Suggestion, stopping at the last |
-| ArrowUp | Highlight the previous Suggestion, stopping at the first |
+| ArrowUp | Highlight the previous Suggestion. With nothing Highlighted, highlight the last; on the first, clear the Highlighted Suggestion so Enter is passed through |
 | PageDown / PageUp | Highlight the last / first Suggestion |
 | Escape | Clear the Suggestion list and cancel a pending Typeahead request. Prevented only when the Suggestion list is open |
 | Enter | Select the Highlighted Suggestion. Prevented only when one is highlighted; otherwise passed through, and a pending Typeahead request is cancelled while the Suggestions stay |
 
 ## Pointer and focus
 
-`pointerdown` on the Suggestion list sets a pressed flag, so the
-`focusout` caused by the press does not clear the list. `pointerup`
-clears the flag, then selects the Suggestion under the pointer, or
-returns focus to the Authored input when the pointer is not on a
-Suggestion, found with `closest('[role="option"]')`. A Suggestion is
-an `li[role="option"]`, not a button, so a press on it never submits a
-form.
+`click` on the Suggestion list selects the Suggestion that contains
+the event target, found with `closest('[role="option"]')`. A click
+inside the list but not on a Suggestion does nothing. `click` fires
+for every input method, including the synthetic click that screen
+readers in browse mode, voice control and switch access send with no
+pointer events, and only for the primary button. A Suggestion is a
+`<button type="button" role="option" tabindex="-1">`: a native button,
+so every input method can activate it, with the option role, so it is
+still a combobox option. Keep both halves. `type="button"` keeps a
+click from submitting a surrounding form, and `tabindex="-1"` keeps it
+out of the tab order, because focus stays on the Authored input. The
+Suggestion list is a `div[role="listbox"]`, since a `ul` may only
+contain `li`.
 
-`pointerup` is bound only on the Suggestion list. A press that starts
-on the list and is released outside it leaves the pressed flag set,
-and the next `focusout` does not clear the list.
+`mousedown` on the Suggestion list is canceled, so a press or a tap
+never moves focus off the Authored input.
+
+`focusout` clears the Suggestion list only when its `relatedTarget` is
+outside the Host element. Some assistive technology focuses a
+Suggestion before it sends the click, and that move must not close
+the list. Focus leaving a Suggestion for somewhere outside the Host
+element still closes it.

@@ -110,20 +110,24 @@ Both are reflected as properties, so `el.rows = '3'` works too.
 ### Properties
 
 * `announce` -- A function `(count:number) => string` that returns the
-  text screen readers hear when Suggestions arrive. The default is
-  English, "1 Suggestion available" or "N Suggestions available".
-  Replace it to translate; your function handles plurals. It is read
-  each time Suggestions arrive, so you can set it at any time. There is
-  no matching attribute.
+  text screen readers hear when a Typeahead request settles. `count` is
+  the number of Suggestions, and is 0 when nothing matched the Query.
+  The default is English, "No Suggestions", "1 Suggestion available" or
+  "N Suggestions available". Replace it to translate; your function
+  handles plurals and 0. It is read each time a request settles, so you
+  can set it at any time. There is no matching attribute.
 
 ```ts
 const el = document.querySelector('actor-typeahead')!
-el.announce = count => count === 1 ?
-    '1 sugerencia disponible' :
-    `${count} sugerencias disponibles`
+el.announce = count => {
+    if (count === 0) return 'Sin sugerencias'
+    return count === 1 ?
+        '1 sugerencia disponible' :
+        `${count} sugerencias disponibles`
+}
 ```
 
-Nothing is announced when there are no Suggestions.
+A request that fails is not announced.
 
 ### Events
 
@@ -162,7 +166,7 @@ import '@substrate-system/actor-typeahead/min/css'
 ```css
 actor-typeahead {
     --color-background: #fff;
-    --color-border: #0002;
+    --color-border: #0007;
     --color-shadow: #000;
     --color-hover: #0001;
     --color-avatar-fallback: #0002;
@@ -182,14 +186,15 @@ of it. The Suggestion list markup is:
     <input role="combobox" aria-autocomplete="list" aria-expanded="true"
         aria-controls="actor-typeahead-1-list"
         aria-activedescendant="actor-typeahead-1-option-0">
-    <ul class="suggestion-list" id="actor-typeahead-1-list"
+    <div class="suggestion-list" id="actor-typeahead-1-list"
         role="listbox">
-        <li class="suggestion" id="actor-typeahead-1-option-0"
-            role="option" aria-selected="true">
+        <button type="button" class="suggestion"
+            id="actor-typeahead-1-option-0" role="option"
+            tabindex="-1" aria-selected="true">
             <div class="avatar"><img class="img" alt=""></div>
             <span class="handle"></span>
-        </li>
-    </ul>
+        </button>
+    </div>
     <!-- visually hidden, announces how many Suggestions arrived -->
     <div class="suggestion-count" role="status"></div>
 </actor-typeahead>
@@ -197,8 +202,11 @@ of it. The Suggestion list markup is:
 
 `aria-selected="true"` marks the Suggestion highlighted with the
 keyboard. The input also gets `autocomplete="off"` unless you set
-`autocomplete` yourself. If the input has a `<label>` with an `id`, the
-Suggestion list is labelled by it.
+`autocomplete` yourself. The Suggestion list gets the same name as the
+input, from the input's `aria-labelledby`, its `aria-label`, or its
+`<label>`s, in that order. Your labels do not need an `id`: when any
+label lacks one, the list gets the label text as its `aria-label`. The
+component never writes attributes on your labels.
 
 ### Avoid a flash of undefined content
 

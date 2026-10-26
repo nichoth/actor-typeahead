@@ -29,8 +29,9 @@ supported it is a manual popover in the top layer. _Avoid_: menu,
 dropdown, results.
 
 **Suggestion** -- One Actor offered as a possible completion for the
-current Query: an avatar and a Handle. The `.suggestion` class, an
-`<li role="option">`. _Avoid_: row, result, item, user.
+current Query: an avatar and a Handle. The `.suggestion` class, a
+`<button role="option">` inside the Suggestion list's
+`<div role="listbox">`. _Avoid_: row, result, item, user.
 
 **Highlighted Suggestion** -- The Suggestion the user has moved to with
 the arrow or Page keys, which Enter will select. At most one at a time,
@@ -42,8 +43,9 @@ active row, selected (Selection means the user chose it).
 how many Suggestions a Typeahead request returned. The
 `.suggestion-count` class, a `<div role="status">` in the Host element,
 outside the Suggestion list. Its text comes from the `announce`
-property. Empty while the Suggestion list is closed, and not written
-when only the Highlighted Suggestion moves. _Avoid_: live region,
+property. Empty while the Suggestion list is closed, except after a
+request that matched no Actors, which announces that. Not written when
+only the Highlighted Suggestion moves. _Avoid_: live region,
 status.
 
 ## Product
@@ -60,9 +62,9 @@ parameter of the Typeahead request. An empty Query clears the
 Suggestion list without a request.
 
 **Selection** -- Choosing a Suggestion, with Enter on the Highlighted
-Suggestion or with the pointer. Writes the Handle into the Authored
-input, closes the Suggestion list and fires `actor-typeahead:select`
-with the Actor as `detail`.
+Suggestion or with a click on a Suggestion. Writes the Handle into the
+Authored input, closes the Suggestion list and fires
+`actor-typeahead:select` with the Actor as `detail`.
 
 **API host** -- The server the Typeahead request goes to, set with the
 `host` attribute. Defaults to the public Bluesky AppView,

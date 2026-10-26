@@ -28,8 +28,8 @@ import. The `./min/*` builds bundle it.
 `npm test` bundles `test/index.ts` with esbuild and runs it in a
 browser through tapout, using tapzero assertions. The suite replaces
 `window.fetch` with a stub, mounts real elements, and drives them with
-synthetic `input`, `keydown` and pointer events. The test seam is the
-element's public surface only.
+synthetic `input`, `keydown`, `focusout`, `mousedown` and `click`
+events. The test seam is the element's public surface only.
 
 ## CI and deploy
 

@@ -72,17 +72,17 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
     /**
      * Returns the text announced when a Typeahead request settles with
-     * `count` Suggestions. Defaults to English. Replace it to translate;
-     * the replacement handles plurals. Read at announce time, so it can
-     * be set after connect.
+     * `count` Suggestions, including 0 when nothing matched the Query.
+     * Defaults to English. Replace it to translate; the replacement
+     * handles plurals and 0. Read at announce time, so it can be set
+     * after connect.
      */
     announce:(count:number) => string = defaultAnnounce
 
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
-    #pressed = false
-    #suggestionList:HTMLUListElement|null = null
+    #suggestionList:HTMLDivElement|null = null
     #suggestionCount:HTMLDivElement|null = null
     #nbsp = false
     #timer:ReturnType<typeof setTimeout>|undefined
@@ -119,21 +119,29 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
                 break
 
             case 'focusout':
-                this.#onfocusout()
+                if (evt instanceof FocusEvent) this.#onfocusout(evt)
                 break
 
-            case 'pointerdown':
-                this.#pressed = true
+            case 'mousedown':
+                // a press or a tap keeps focus on the Authored input
+                evt.preventDefault()
                 break
 
-            case 'pointerup':
-                this.#onpointerup(evt)
+            case 'click':
+                this.#onclick(evt)
                 break
         }
     }
 
     #onkeydown (evt:KeyboardEvent) {
         const last = this.#actors.length - 1
+        const moves = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp']
+        // with no Suggestions there is nothing to move to, and a render
+        // would empty a "No Suggestions" announcement
+        if (last < 0 && moves.includes(evt.key)) {
+            evt.preventDefault()
+            return
+        }
 
         switch (evt.key) {
             case 'ArrowDown':
@@ -150,7 +158,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
             case 'ArrowUp':
                 evt.preventDefault()
-                this.#index = Math.max(this.#index - 1, 0)
+                // wrap from nothing Highlighted to the last Suggestion,
+                // and from the first back to nothing (the APG pattern)
+                this.#index = this.#index < 0 ? last : this.#index - 1
                 this.render()
                 break
 
@@ -224,8 +234,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
         this.#actors = parseActors(json)
         this.#index = -1
+        // after render(), which empties the count when there are none
         this.render()
-        if (this.#actors.length) this.#announce(this.#actors.length)
+        this.#announce(this.#actors.length)
     }
 
     /**
@@ -239,22 +250,21 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             (this.#nbsp ? '\u00a0' : '')
     }
 
-    #onfocusout () {
-        if (this.#pressed) return
+    /**
+     * Close only when focus leaves the host. Some assistive technology
+     * focuses a Suggestion before it sends the click that selects it.
+     */
+    #onfocusout (evt:FocusEvent) {
+        const next = evt.relatedTarget
+        if (next instanceof Node && this.contains(next)) return
         this.#clear()
     }
 
-    #onpointerup (evt:Event) {
-        this.#pressed = false
-
+    #onclick (evt:Event) {
         const option = evt.target instanceof Element ?
             evt.target.closest<HTMLElement>('[role="option"]') :
             null
-
-        if (!option) {
-            this.qs('input')?.focus()
-            return
-        }
+        if (!option) return
 
         this.#select(Number(option.dataset.index))
     }
@@ -297,13 +307,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
      */
     render () {
         if (!this.#suggestionList) {
-            this.#suggestionList = document.createElement('ul')
+            this.#suggestionList = document.createElement('div')
             this.#suggestionList.className = 'suggestion-list'
             this.#suggestionList.id = `${this.#id}-list`
             this.#suggestionList.setAttribute('role', 'listbox')
             if (ANCHORED) this.#suggestionList.popover = 'manual'
-            this.#suggestionList.addEventListener('pointerdown', this)
-            this.#suggestionList.addEventListener('pointerup', this)
+            this.#suggestionList.addEventListener('mousedown', this)
+            this.#suggestionList.addEventListener('click', this)
         }
 
         const list = this.#suggestionList
@@ -318,7 +328,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         }
         const count = this.#suggestionCount
         if (count.parentNode !== this) this.append(count)
-        // only a response writes the count; any close empties it
+        // only a response writes the count; any close empties it, and a
+        // response with no Suggestions writes it after this render
         if (!this.#actors.length) count.textContent = ''
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
@@ -339,13 +350,12 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             input.setAttribute('aria-controls', list.id)
             input.setAttribute('aria-expanded', String(open))
 
-            const labels = [...(input.labels ?? [])]
-                .map(label => label.id)
-                .filter(Boolean)
-            if (labels.length) {
-                list.setAttribute('aria-labelledby', labels.join(' '))
-            } else {
-                list.removeAttribute('aria-labelledby')
+            // the Suggestion list carries at most one of the two
+            const name = nameSource(input, this)
+            for (const attr of ['aria-labelledby', 'aria-label'] as const) {
+                const value = name[attr]
+                if (value) list.setAttribute(attr, value)
+                else list.removeAttribute(attr)
             }
 
             if (this.#actors[this.#index]) {
@@ -390,13 +400,18 @@ function suggestion (
     actor:Actor,
     index:number,
     active:boolean
-):HTMLLIElement {
-    const li = document.createElement('li')
-    li.className = 'suggestion'
-    li.setAttribute('role', 'option')
-    li.setAttribute('aria-selected', String(active))
-    li.dataset.index = String(index)
-    li.dataset.handle = actor.handle
+):HTMLButtonElement {
+    const button = document.createElement('button')
+    // a button, so every input method can activate it, but not a
+    // submit button, and out of the tab order, because focus stays on
+    // the Authored input
+    button.type = 'button'
+    button.tabIndex = -1
+    button.className = 'suggestion'
+    button.setAttribute('role', 'option')
+    button.setAttribute('aria-selected', String(active))
+    button.dataset.index = String(index)
+    button.dataset.handle = actor.handle
 
     const avatar = document.createElement('div')
     avatar.className = 'avatar'
@@ -411,15 +426,63 @@ function suggestion (
     handle.textContent = actor.handle
 
     avatar.append(img)
-    li.append(avatar, handle)
+    button.append(avatar, handle)
 
-    return li
+    return button
+}
+
+/**
+ * What names the Authored input, in the order of accessible name
+ * computation, as the attribute the Suggestion list copies it to.
+ */
+function nameSource (input:HTMLInputElement, host:HTMLElement):{
+    'aria-labelledby'?:string;
+    'aria-label'?:string;
+} {
+    const labelledby = input.getAttribute('aria-labelledby')
+    if (labelledby) return { 'aria-labelledby': labelledby }
+
+    const label = input.getAttribute('aria-label')
+    if (label) return { 'aria-label': label }
+
+    // reference the labels when they all have ids, otherwise copy their
+    // text, because the component never writes ids onto the page
+    const labels = [...(input.labels ?? [])]
+    if (!labels.length) return {}
+    if (labels.every(label => label.id)) {
+        return {
+            'aria-labelledby': labels.map(label => label.id).join(' ')
+        }
+    }
+
+    const text = labels
+        .map(label => labelText(label, host).trim())
+        .filter(Boolean)
+        .join(' ')
+    return text ? { 'aria-label': text } : {}
+}
+
+/**
+ * The text of a label, without the Host element's content, which a
+ * label that wraps the Host element would otherwise include.
+ */
+function labelText (label:HTMLLabelElement, host:HTMLElement):string {
+    const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT, {
+        acceptNode: node => host.contains(node) ?
+            NodeFilter.FILTER_REJECT :
+            NodeFilter.FILTER_ACCEPT
+    })
+
+    let text = ''
+    while (walker.nextNode()) text += walker.currentNode.nodeValue
+    return text
 }
 
 /**
  * The default English Suggestion count announcement.
  */
 function defaultAnnounce (count:number):string {
+    if (count === 0) return 'No Suggestions'
     return count === 1 ?
         '1 Suggestion available' :
         `${count} Suggestions available`
