@@ -42,8 +42,9 @@ active row, selected (Selection means the user chose it).
 how many Suggestions a Typeahead request returned. The
 `.suggestion-count` class, a `<div role="status">` in the Host element,
 outside the Suggestion list. Its text comes from the `announce`
-property. Empty while the Suggestion list is closed, and not written
-when only the Highlighted Suggestion moves. _Avoid_: live region,
+property. Empty while the Suggestion list is closed, except after a
+request that matched no Actors, which announces that. Not written when
+only the Highlighted Suggestion moves. _Avoid_: live region,
 status.
 
 ## Product

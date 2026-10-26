@@ -302,6 +302,76 @@ test('a custom announce is used', async t => {
     t.equal(announced(el), `count ${ACTORS.length}`, 'its text is used')
 })
 
+test('a request with no Suggestions is announced', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+
+    // start open, so the empty response closes the Suggestion list
+    type(input, 'ali')
+    respond(await requestFor(calls, 'ali'), ACTORS)
+    await waitFor(OPTION)
+    type(input, 'zzz')
+    respond(await requestFor(calls, 'zzz'), [])
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.equal(isOpen(el), false, 'the Suggestion list is closed')
+    t.ok(announced(el), 'should announce')
+    t.equal(announced(el), el.announce(0), 'the announce text for 0')
+})
+
+test('a custom announce is called with 0', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+    const counts:number[] = []
+    el.announce = count => {
+        counts.push(count)
+        return `count ${count}`
+    }
+
+    type(input, 'zzz')
+    respond(await requestFor(calls, 'zzz'), [])
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.deepEqual(counts, [0], 'called with 0')
+    t.equal(announced(el), 'count 0', 'its text is used')
+})
+
+test('a failed request is not announced', async t => {
+    const failures:[string, (call:Deferred) => void][] = [
+        ['a network error', call => {
+            call.reject(new TypeError('Failed to fetch'))
+        }],
+        ['a non-2xx response', call => {
+            call.resolve(new Response(JSON.stringify({ actors: [] }), {
+                status: 500
+            }))
+        }],
+    ]
+
+    for (const [name, fail] of failures) {
+        const { el, input } = await setup()
+        const calls = deferredFetch()
+
+        // start announced, so the failure has a count to clear
+        type(input, 'ali')
+        respond(await requestFor(calls, 'ali'), ACTORS)
+        await waitFor(OPTION)
+        type(input, 'zzz')
+        fail(await requestFor(calls, 'zzz'))
+        await sleep(50)
+
+        window.fetch = fakeFetch
+        t.equal(isOpen(el), false, `closed after ${name}`)
+        t.equal(
+            el.querySelector('[role="status"]')!.textContent,
+            '',
+            `empty after ${name}`
+        )
+    }
+})
+
 test('the same count is announced again', async t => {
     const { el, input } = await setup()
     const calls = deferredFetch()
@@ -365,10 +435,6 @@ test('closing the Suggestion list empties the live region',
                 }))
             }],
             ['clearing the Query', input => type(input, '')],
-            ['an empty response', async (input, calls) => {
-                type(input, 'zzz')
-                respond(await requestFor(calls, 'zzz'), [])
-            }],
             ['a failed request', async (input, calls) => {
                 type(input, 'zzz')
                 const call = await requestFor(calls, 'zzz')

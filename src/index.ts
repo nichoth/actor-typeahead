@@ -72,9 +72,10 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
     /**
      * Returns the text announced when a Typeahead request settles with
-     * `count` Suggestions. Defaults to English. Replace it to translate;
-     * the replacement handles plurals. Read at announce time, so it can
-     * be set after connect.
+     * `count` Suggestions, including 0 when nothing matched the Query.
+     * Defaults to English. Replace it to translate; the replacement
+     * handles plurals and 0. Read at announce time, so it can be set
+     * after connect.
      */
     announce:(count:number) => string = defaultAnnounce
 
@@ -224,8 +225,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
         this.#actors = parseActors(json)
         this.#index = -1
+        // after render(), which empties the count when there are none
         this.render()
-        if (this.#actors.length) this.#announce(this.#actors.length)
+        this.#announce(this.#actors.length)
     }
 
     /**
@@ -318,7 +320,8 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         }
         const count = this.#suggestionCount
         if (count.parentNode !== this) this.append(count)
-        // only a response writes the count; any close empties it
+        // only a response writes the count; any close empties it, and a
+        // response with no Suggestions writes it after this render
         if (!this.#actors.length) count.textContent = ''
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
@@ -420,6 +423,7 @@ function suggestion (
  * The default English Suggestion count announcement.
  */
 function defaultAnnounce (count:number):string {
+    if (count === 0) return 'No Suggestions'
     return count === 1 ?
         '1 Suggestion available' :
         `${count} Suggestions available`
