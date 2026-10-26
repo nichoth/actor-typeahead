@@ -34,15 +34,15 @@ Suggestion is an `li` and not a button), `docs/GLOSSARY.md`
 
 **Status:** ready-for-agent
 
-- [ ] `click()` on a Suggestion inside a `<form>` selects it and does
+- [x] `click()` on a Suggestion inside a `<form>` selects it and does
   not fire `submit` (the test fails if `type="button"` is dropped)
-- [ ] Suggestions have `tabindex="-1"`, so they are not in the tab
+- [x] Suggestions have `tabindex="-1"`, so they are not in the tab
   order
-- [ ] Existing tests that locate Suggestions with `[role="option"]` and
+- [x] Existing tests that locate Suggestions with `[role="option"]` and
   the Suggestion list with `[role="listbox"]` keep passing
-- [ ] The README, the public interface page, the components page and
+- [x] The README, the public interface page, the components page and
   the glossary describe a `div` listbox of `button` Suggestions
-- [ ] The commit message has a `BREAKING CHANGE:` footer naming the
+- [x] The commit message has a `BREAKING CHANGE:` footer naming the
   markup change
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass
