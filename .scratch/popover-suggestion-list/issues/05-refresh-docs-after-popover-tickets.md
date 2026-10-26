@@ -13,7 +13,7 @@ tests for the docs.
 **Touches:** `docs/GLOSSARY.md`, `docs/architecture/public-interface.md`,
 `docs/architecture/runtime-state.md`, `docs/architecture/components.md`
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Known drift
 
