@@ -173,3 +173,36 @@ Effort: medium. Agent exit: 0. Subagents: 0. Cost: $1.28. Checked items: "When t
 - lint, stylelint, build pass; full `npm test`: 240/240.
 
 ---
+<!-- nightralph:entry ticket=a11y-audit:5 attempt=1 outcome=done -->
+## 2026-10-25 21:47 -- a11y-audit/05 attempt 1 -- done
+
+Effort: medium. Agent exit: 0. Subagents: 0. Cost: $0.60. Checked items: "All visible page content is inside `<main>`, and the page has exactly one `<h1>`", "With an error thrown in the page script before the FOUCE block, the page still becomes visible", "The example `<label>`s have no `id`", "An axe run on the example page reports no violations at rest, with the Suggestion list open, and with a Suggestion Highlighted", "`npm run lint`, `npx stylelint src/*.css`, `npm test` and `npm run build` pass".
+
+### Agent notes
+# a11y-audit 05: example page landmarks and FOUCE fail-safe
+
+No automated tests (ticket and project rules: example page is not
+tested). Verified by hand with vite + Playwright.
+
+## Changes
+- example/index.html: content wrapped in `<main>` with one
+  `<h1>actor-typeahead</h1>`; `<h2>` sections stay inside. Labels keep
+  no ids (label-text fallback from ticket 02 names the listbox
+  "Handle").
+- Fail-safe: inline classic `<script>` in `<head>` removes
+  `reduce-fouce` on window `error` (capture phase, so a failed module
+  load also counts), `unhandledrejection`, or after 3s. index.ts FOUCE
+  block left as is (it only runs if the module gets that far).
+- AGENTS.md: note on running axe on the example page.
+
+## Verification
+- Structure: 1 h1, nothing in body outside main except the script,
+  label ids empty.
+- axe (wcag2a/aa, wcag21a/aa, best-practice): 0 violations at rest,
+  open, Highlighted (fetch stubbed via page.route on **/xrpc/**).
+- Throw injected at top of served index.ts: page revealed in ~18ms.
+  index.ts served as 404: revealed in ~17ms.
+- lint, stylelint, build, npm test 240/240 pass. Dev server stopped,
+  temporary example/axe.min.js removed.
+
+---
