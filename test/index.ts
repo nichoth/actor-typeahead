@@ -396,6 +396,29 @@ test('closing the Suggestion list empties the live region',
         }
     })
 
+test('each instance has its own live region', async t => {
+    requests = []
+    document.body.innerHTML = `
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>`
+    await waitFor(ActorTypeahead.TAG)
+    const [first, second] = [
+        ...document.querySelectorAll(ActorTypeahead.TAG)
+    ]
+    const regions = [first, second].map(el => {
+        return el.querySelector('[role="status"]')
+    })
+
+    t.ok(regions[0] && regions[1], 'each has a live region')
+    t.notEqual(regions[0], regions[1], 'not the same region')
+
+    type(first.querySelector('input')!, 'ali')
+    await waitFor(OPTION)
+    await sleep(50)
+    t.ok(announced(first), 'the first is announced')
+    t.equal(regions[1]?.textContent, '', 'the second is unchanged')
+})
+
 test('the Suggestion list is open exactly when it has Suggestions',
     async t => {
         const { el, input } = await setup()
