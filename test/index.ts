@@ -969,6 +969,18 @@ test('ArrowUp with nothing Highlighted highlights the last Suggestion',
         checkActive(t, el, input, ACTORS.length - 1)
     })
 
+test('ArrowUp with no Suggestions does nothing', async t => {
+    const { el, input } = await setup()
+    key(input, 'ArrowUp')
+
+    t.ok(
+        !input.hasAttribute('aria-activedescendant'),
+        'should have no aria-activedescendant'
+    )
+    t.equal(isOpen(el), false, 'should stay closed')
+    t.equal(results(el).length, 0, 'should have no options')
+})
+
 test('ArrowUp on the first Suggestion clears the Highlight', async t => {
     const { el, input, submits } = await formSetup()
     type(input, 'ali')
