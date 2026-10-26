@@ -243,6 +243,24 @@ test('the listbox is labelled by the input\'s label', async t => {
     )
 })
 
+test('the listbox copies the input\'s aria-labelledby', async t => {
+    document.body.innerHTML = `<span id="a">Find</span>
+    <span id="b">an account</span>
+    <${ActorTypeahead.TAG}>
+        <input aria-labelledby="a b" aria-label="ignored">
+    </${ActorTypeahead.TAG}>`
+    const el = (await waitFor(ActorTypeahead.TAG))!
+    const input = el.querySelector('input')!
+    const list = el.querySelector('[role="listbox"]')!
+
+    t.equal(
+        list.getAttribute('aria-labelledby'),
+        input.getAttribute('aria-labelledby'),
+        'should reference what names the input'
+    )
+    t.ok(!list.hasAttribute('aria-label'), 'should have no aria-label')
+})
+
 test('two instances have distinct ids', async t => {
     requests = []
     document.body.innerHTML = `

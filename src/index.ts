@@ -343,11 +343,13 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
             input.setAttribute('aria-controls', list.id)
             input.setAttribute('aria-expanded', String(open))
 
-            const labels = [...(input.labels ?? [])]
-                .map(label => label.id)
-                .filter(Boolean)
-            if (labels.length) {
-                list.setAttribute('aria-labelledby', labels.join(' '))
+            const labelledby = input.getAttribute('aria-labelledby') ||
+                [...(input.labels ?? [])]
+                    .map(label => label.id)
+                    .filter(Boolean)
+                    .join(' ')
+            if (labelledby) {
+                list.setAttribute('aria-labelledby', labelledby)
             } else {
                 list.removeAttribute('aria-labelledby')
             }
