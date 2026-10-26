@@ -70,11 +70,21 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     declare host:string|null
     declare rows:string|null
 
+    /**
+     * Returns the text announced when a Typeahead request settles with
+     * `count` Suggestions. Defaults to English. Replace it to translate;
+     * the replacement handles plurals. Read at announce time, so it can
+     * be set after connect.
+     */
+    announce:(count:number) => string = defaultAnnounce
+
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
     #pressed = false
     #suggestionList:HTMLUListElement|null = null
+    #suggestionCount:HTMLDivElement|null = null
+    #nbsp = false
     #timer:ReturnType<typeof setTimeout>|undefined
     #controller:AbortController|null = null
 
@@ -215,6 +225,18 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         this.#actors = parseActors(json)
         this.#index = -1
         this.render()
+        if (this.#actors.length) this.#announce(this.#actors.length)
+    }
+
+    /**
+     * Write the Suggestion count. A trailing no-break space alternates
+     * between writes, so screen readers re-read an identical count.
+     */
+    #announce (count:number) {
+        if (!this.#suggestionCount) return
+        this.#nbsp = !this.#nbsp
+        this.#suggestionCount.textContent = this.announce(count) +
+            (this.#nbsp ? '\u00a0' : '')
     }
 
     #onfocusout () {
@@ -267,9 +289,9 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     }
 
     /**
-     * Render into light DOM, next to the authored `<input>`. Only the
-     * Suggestion list is rebuilt, so the input element, and anything the
-     * consumer attached to it, is never replaced. On the input, only the
+     * Render into light DOM. Only the suggestion list is rebuilt,
+     * so the input element, and anything the consumer attached to it,
+     * is never replaced. On the input, only the
      * ARIA combobox attributes are written, plus `autocomplete="off"`
      * when the page did not set `autocomplete`.
      */
@@ -286,6 +308,18 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
         const list = this.#suggestionList
         if (list.parentNode !== this) this.append(list)
+
+        // the live region exists empty before its first write, because
+        // screen readers often skip a region inserted already filled
+        if (!this.#suggestionCount) {
+            this.#suggestionCount = document.createElement('div')
+            this.#suggestionCount.className = 'suggestion-count'
+            this.#suggestionCount.setAttribute('role', 'status')
+        }
+        const count = this.#suggestionCount
+        if (count.parentNode !== this) this.append(count)
+        // only a response writes the count; any close empties it
+        if (!this.#actors.length) count.textContent = ''
 
         list.replaceChildren(...this.#actors.map((actor, i) => {
             const option = suggestion(actor, i, i === this.#index)
@@ -380,6 +414,15 @@ function suggestion (
     li.append(avatar, handle)
 
     return li
+}
+
+/**
+ * The default English Suggestion count announcement.
+ */
+function defaultAnnounce (count:number):string {
+    return count === 1 ?
+        '1 Suggestion available' :
+        `${count} Suggestions available`
 }
 
 function parseActors (json:unknown):Actor[] {

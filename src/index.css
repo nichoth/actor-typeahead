@@ -75,6 +75,16 @@ actor-typeahead {
         }
     }
 
+    /* the live region is read by screen readers, not shown */
+    & .suggestion-count {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
     & .suggestion {
         all: unset;
         box-sizing: border-box;

@@ -105,6 +105,15 @@ function isOpen (el:ActorTypeahead):boolean {
     return !!list && list.matches(':popover-open')
 }
 
+/**
+ * The live region's text, without the trailing no-break space that
+ * alternates between announcements.
+ */
+function announced (el:ActorTypeahead):string {
+    const text = el.querySelector('[role="status"]')?.textContent ?? ''
+    return text.replace(/\u00a0$/, '')
+}
+
 function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
     return el.querySelectorAll('[role="option"]')
 }
@@ -250,6 +259,164 @@ test('two instances have distinct ids', async t => {
     t.equal(ids.length, 2 * (1 + ACTORS.length), 'every element is counted')
     t.ok(ids.every(Boolean), 'every element has an id')
     t.equal(new Set(ids).size, ids.length, 'ids are unique')
+})
+
+test('the Suggestion count is an empty live region before any Query',
+    async t => {
+        const { el } = await setup()
+        const regions = el.querySelectorAll('[role="status"]')
+
+        t.equal(regions.length, 1, 'one live region')
+        t.ok(
+            !regions[0]?.closest('[role="listbox"]'),
+            'outside the Suggestion list'
+        )
+        t.equal(regions[0]?.parentElement, el, 'a child of the host')
+        t.equal(regions[0]?.textContent, '', 'empty')
+    })
+
+test('a settled request announces the Suggestion count', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    t.ok(announced(el), 'should announce')
+    t.equal(
+        announced(el),
+        el.announce(ACTORS.length),
+        'the announce text for the number of Suggestions'
+    )
+})
+
+test('a custom announce is used', async t => {
+    const { el, input } = await setup()
+    const counts:number[] = []
+    el.announce = count => {
+        counts.push(count)
+        return `count ${count}`
+    }
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    t.deepEqual(counts, [ACTORS.length], 'called with the count')
+    t.equal(announced(el), `count ${ACTORS.length}`, 'its text is used')
+})
+
+test('the same count is announced again', async t => {
+    const { el, input } = await setup()
+    const calls = deferredFetch()
+
+    type(input, 'al')
+    respond(await requestFor(calls, 'al'), ACTORS)
+    await waitFor(OPTION)
+    const first = el.querySelector('[role="status"]')!.textContent
+    type(input, 'ali')
+    respond(await requestFor(calls, 'ali'), ACTORS)
+    await sleep(50)
+
+    window.fetch = fakeFetch
+    t.notEqual(
+        el.querySelector('[role="status"]')!.textContent,
+        first,
+        'the live region content changes'
+    )
+    t.equal(announced(el), el.announce(ACTORS.length), 'the same count')
+})
+
+test('moving the Highlighted Suggestion is not announced',
+    async t => {
+        const { el, input } = await setup()
+        type(input, 'ali')
+        await waitFor(OPTION)
+        const region = el.querySelector('[role="status"]')!
+        const before = region.textContent
+        let writes = 0
+        new MutationObserver(records => { writes += records.length })
+            .observe(region, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            })
+
+        for (const name of ['ArrowDown', 'ArrowDown', 'ArrowUp',
+            'PageDown', 'PageUp']) {
+            key(input, name)
+        }
+        await sleep(0)
+
+        t.equal(region.textContent, before, 'same content')
+        t.equal(writes, 0, 'the live region is not written')
+    })
+
+test('closing the Suggestion list empties the live region',
+    async t => {
+        const closes:[string, (
+            input:HTMLInputElement,
+            calls:Deferred[]
+        ) => void|Promise<void>][] = [
+            ['Escape', input => { key(input, 'Escape') }],
+            ['Selection', input => {
+                key(input, 'ArrowDown')
+                key(input, 'Enter')
+            }],
+            ['focus out', input => {
+                input.dispatchEvent(new FocusEvent('focusout', {
+                    bubbles: true
+                }))
+            }],
+            ['clearing the Query', input => type(input, '')],
+            ['an empty response', async (input, calls) => {
+                type(input, 'zzz')
+                respond(await requestFor(calls, 'zzz'), [])
+            }],
+            ['a failed request', async (input, calls) => {
+                type(input, 'zzz')
+                const call = await requestFor(calls, 'zzz')
+                call.reject(new TypeError('Failed to fetch'))
+            }],
+        ]
+
+        for (const [name, close] of closes) {
+            const { el, input } = await setup()
+            const calls = deferredFetch()
+            type(input, 'ali')
+            respond(await requestFor(calls, 'ali'), ACTORS)
+            await waitFor(OPTION)
+            t.ok(announced(el), `announced before ${name}`)
+
+            await close(input, calls)
+            await sleep(50)
+            window.fetch = fakeFetch
+            t.equal(isOpen(el), false, `closed after ${name}`)
+            t.equal(
+                el.querySelector('[role="status"]')!.textContent,
+                '',
+                `empty after ${name}`
+            )
+        }
+    })
+
+test('each instance has its own live region', async t => {
+    requests = []
+    document.body.innerHTML = `
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>
+        <${ActorTypeahead.TAG}><input></${ActorTypeahead.TAG}>`
+    await waitFor(ActorTypeahead.TAG)
+    const [first, second] = [
+        ...document.querySelectorAll(ActorTypeahead.TAG)
+    ]
+    const regions = [first, second].map(el => {
+        return el.querySelector('[role="status"]')
+    })
+
+    t.ok(regions[0] && regions[1], 'each has a live region')
+    t.notEqual(regions[0], regions[1], 'not the same region')
+
+    type(first.querySelector('input')!, 'ali')
+    await waitFor(OPTION)
+    await sleep(50)
+    t.ok(announced(first), 'the first is announced')
+    t.equal(regions[1]?.textContent, '', 'the second is unchanged')
 })
 
 test('the Suggestion list is open exactly when it has Suggestions',
@@ -644,6 +811,49 @@ test('removing the element before the debounce sends no request',
         await sleep(DEBOUNCE)
 
         t.equal(requests.length, 0, 'should not make a request')
+    })
+
+test('focusout and Selection before the debounce send no request',
+    async t => {
+        const closes:[string, (input:HTMLInputElement) => void][] = [
+            ['Selection', input => {
+                key(input, 'ArrowDown')
+                key(input, 'Enter')
+            }],
+            ['focusout', input => {
+                input.dispatchEvent(new FocusEvent('focusout', {
+                    bubbles: true
+                }))
+            }],
+        ]
+
+        for (const [name, close] of closes) {
+            const { el, input } = await setup()
+            input.focus()
+            const calls = deferredFetch()
+
+            // Suggestions on screen, so Selection has one to choose
+            type(input, 'al')
+            respond(await requestFor(calls, 'al'), ACTORS)
+            await waitFor(OPTION)
+            type(input, 'ali')
+            close(input)
+            await sleep(DEBOUNCE)
+
+            // answer a stray request, so it could reopen the list
+            const late = calls.filter(c => c.q === 'ali')
+            late.forEach(call => respond(call, ACTORS))
+            await sleep(50)
+
+            window.fetch = fakeFetch
+            t.equal(late.length, 0, `no request after ${name}`)
+            t.equal(isOpen(el), false, `closed after ${name}`)
+            t.equal(
+                input.getAttribute('aria-expanded'),
+                'false',
+                `collapsed after ${name}`
+            )
+        }
     })
 
 test('select with the keyboard', async t => {

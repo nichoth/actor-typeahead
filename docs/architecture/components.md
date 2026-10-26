@@ -10,7 +10,9 @@ Sources: [`src/index.ts`](../../src/index.ts),
 |------|----------|------|
 | `ActorTypeahead` | `src/index.ts` | The Host element class, created by `WebComponent.create('actor-typeahead')` ([ADR-003](../adr/ADR-003-substrate-web-component-base.md)) |
 | `ActorTypeahead.define()` | `src/index.ts`, module scope | Registers the tag as an import side effect. A no-op if already registered |
-| `row()` | `src/index.ts`, module-private | Builds one Suggestion element from an Actor |
+| `ANCHORED` | `src/index.ts`, module-private | `true` when `CSS.supports('anchor-scope: --a')`. Gates the `popover` attribute and the anchored layout |
+| `instances` | `src/index.ts`, module-private | Counter that gives each instance its id prefix, `#id` |
+| `suggestion()` | `src/index.ts`, module-private | Builds one Suggestion, an `li[role="option"]`, from an Actor |
 | `parseActors()`, `isRecord()` | `src/index.ts`, module-private | Narrow the untrusted response body to `Actor[]` ([ADR-005](../adr/ADR-005-typeahead-responses-are-untrusted.md)) |
 | Stylesheet | `src/index.css` | Default look and the custom property API ([ADR-002](../adr/ADR-002-public-css-api.md)) |
 
@@ -34,12 +36,20 @@ Host listeners rely on events bubbling from the Authored input
 ## Lifecycle
 
 - **Connect.** `connectedCallback` calls `render()`. The first call
-  creates the Suggestion list. Each call re-appends it if it is not a
-  child of the Host element.
+  creates the Suggestion list, with `popover="manual"` when
+  `ANCHORED`. Each call re-appends it if it is not a child of the Host
+  element.
+- **Render.** `render()` rebuilds the Suggestions, then calls
+  `#toggle()` to show or hide the popover. `#toggle()` is guarded on
+  `:popover-open`, does nothing without `ANCHORED`, and reports closed
+  for a disconnected list. Its result becomes `aria-expanded` on the
+  Authored input.
 - **Attribute change.** `host` and `rows` are read when the next
   Typeahead request is built. Nothing re-renders on change.
-- **Disconnect.** No cleanup. Listeners live on the element's own
-  nodes, and in-flight requests are not cancelled.
+- **Disconnect.** `disconnectedCallback` calls `#cancel()`, which
+  clears the debounce timer and aborts the in-flight Typeahead request.
+  The Suggestion list is left as is. Listeners live on the element's
+  own nodes, so none need removing.
 
 ## Keyboard
 
@@ -62,8 +72,9 @@ Escape closes a surrounding `<dialog>`.
 `focusout` caused by the press does not clear the list. `pointerup`
 clears the flag, then selects the Suggestion under the pointer, or
 returns focus to the Authored input when the pointer is not on a
-Suggestion. Each Suggestion is a `type="button"` so a press never
-submits a form.
+Suggestion, found with `closest('[role="option"]')`. A Suggestion is
+an `li[role="option"]`, not a button, so a press on it never submits a
+form.
 
 `pointerup` is bound only on the Suggestion list. A press that starts
 on the list and is released outside it leaves the pressed flag set,

@@ -13,7 +13,7 @@ tests for the docs.
 **Touches:** `docs/GLOSSARY.md`, `docs/architecture/public-interface.md`,
 `docs/architecture/runtime-state.md`, `docs/architecture/components.md`
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Known drift
 
@@ -58,17 +58,17 @@ Leave ADRs as they are; ADR-002's mention of `.menu` is history.
 
 ## Acceptance criteria
 
-- [ ] `grep -rn -E 'menu|\.user|data-active|pending rename|popover
+- [x] `grep -rn -E 'menu|\.user|data-active|pending rename|popover
       ticket' docs/GLOSSARY.md docs/architecture/` finds nothing that
       describes current behavior
-- [ ] Every class name, custom property, ARIA attribute, private field
+- [x] Every class name, custom property, ARIA attribute, private field
       and helper named in the four files exists in `src/index.ts` or
       `src/index.css`
-- [ ] The DOM contract in `public-interface.md` matches what `render()`
+- [x] The DOM contract in `public-interface.md` matches what `render()`
       and `suggestion()` produce
-- [ ] Lines stay under 80 columns, with no em dashes or arrow
+- [x] Lines stay under 80 columns, with no em dashes or arrow
       characters
-- [ ] `git diff --stat` shows changes only under `docs/`
+- [x] `git diff --stat` shows changes only under `docs/`
 
 ## Comments
 
