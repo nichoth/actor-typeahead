@@ -126,3 +126,8 @@ Single-context layout. See `docs/agents/domain.md`.
 * Style-only changes are checked by hand: run `npx vite`, stub
   `window.fetch` in the page, then read computed styles. Chrome
   DevTools forced-colors emulation covers Windows High Contrast.
+* The example page must pass axe at rest, open and Highlighted.
+  `axe-core` is in `node_modules`; serve a temporary copy from
+  `example/` (delete it afterwards), stub `**/xrpc/**`, then inject it.
+  Its `reduce-fouce` class is also removed by an inline head script on
+  any `error` or after a timeout, so keep that script when editing it.
