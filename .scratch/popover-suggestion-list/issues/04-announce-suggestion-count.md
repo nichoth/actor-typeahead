@@ -53,22 +53,22 @@ translatable text.
 
 ## Acceptance criteria
 
-- [ ] The host contains one polite live region (`[role="status"]`)
+- [x] The host contains one polite live region (`[role="status"]`)
       outside the Suggestion list, present and empty before any Query
-- [ ] When a Typeahead request settles with Suggestions, the live
+- [x] When a Typeahead request settles with Suggestions, the live
       region's text is the return value of `announce` for that count
-- [ ] A custom `announce` set on the element is called with the number
+- [x] A custom `announce` set on the element is called with the number
       of Suggestions, and its return value is used
-- [ ] A second response with the same number of Suggestions changes
+- [x] A second response with the same number of Suggestions changes
       the live region's content
-- [ ] Moving the Highlighted Suggestion with the arrow or Page keys
+- [x] Moving the Highlighted Suggestion with the arrow or Page keys
       does not change the live region's content
-- [ ] When the Suggestion list closes (Escape, Selection, focus out,
+- [x] When the Suggestion list closes (Escape, Selection, focus out,
       clearing the Query, an empty response, a failed request), the
       live region is emptied
-- [ ] Two instances on one page each have their own live region, and a
+- [x] Two instances on one page each have their own live region, and a
       response for one does not change the other's
-- [ ] README documents the `announce` property and shows the live
+- [x] README documents the `announce` property and shows the live
       region in the markup snippet
 
 ## Comments
