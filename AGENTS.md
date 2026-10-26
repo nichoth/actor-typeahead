@@ -64,6 +64,14 @@ Single-context layout. See `docs/agents/domain.md`.
   page listener calls `preventDefault()`. A test cannot observe an
   unhandled rejection and still pass; `rejections()` only proves there
   were none.
+* `render()` runs on every arrow and Page key, so it must not write the
+  Suggestion count (`[role="status"]`). Only the response path in
+  `#request` writes it; `render()` only empties it when there are no
+  Suggestions. To prove a key does not write it, observe it with a
+  `MutationObserver`, since an identical rewrite leaves the text equal.
+* A `waitFor` lambda that never matches hangs the run until tapout's
+  timeout ("Tests auto-finished"), hiding which assertion failed. After
+  `respond()`, `await sleep(50)` instead when the change may not occur.
 * tapout's `--timeout` covers the whole run, not one test. Each
   debounced `type()` adds time, so raise it in the `test` script if
   the suite grows past it ("Tests timed out").

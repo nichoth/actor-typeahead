@@ -72,10 +72,11 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
 
     /**
      * Returns the text announced when a Typeahead request settles with
-     * `count` Suggestions. Replace it to translate; it handles plurals
-     * itself. Read at announce time, so it can be set after connect.
+     * `count` Suggestions. Defaults to English. Replace it to translate;
+     * the replacement handles plurals. Read at announce time, so it can
+     * be set after connect.
      */
-    announce:(count:number) => string = announce
+    announce:(count:number) => string = defaultAnnounce
 
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
@@ -418,7 +419,7 @@ function suggestion (
 /**
  * The default English Suggestion count announcement.
  */
-function announce (count:number):string {
+function defaultAnnounce (count:number):string {
     return count === 1 ?
         '1 Suggestion available' :
         `${count} Suggestions available`
