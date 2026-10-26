@@ -105,6 +105,15 @@ function isOpen (el:ActorTypeahead):boolean {
     return !!list && list.matches(':popover-open')
 }
 
+/**
+ * The live region's text, without the trailing no-break space that
+ * alternates between announcements.
+ */
+function announced (el:ActorTypeahead):string {
+    const text = el.querySelector('[role="status"]')?.textContent ?? ''
+    return text.replace(/\u00a0$/, '')
+}
+
 function results (el:ActorTypeahead):NodeListOf<HTMLLIElement> {
     return el.querySelectorAll('[role="option"]')
 }
@@ -265,6 +274,33 @@ test('the Suggestion count is an empty live region before any Query',
         t.equal(regions[0]?.parentElement, el, 'a child of the host')
         t.equal(regions[0]?.textContent, '', 'empty')
     })
+
+test('a settled request announces the Suggestion count', async t => {
+    const { el, input } = await setup()
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    t.ok(announced(el), 'should announce')
+    t.equal(
+        announced(el),
+        el.announce(ACTORS.length),
+        'the announce text for the number of Suggestions'
+    )
+})
+
+test('a custom announce is used', async t => {
+    const { el, input } = await setup()
+    const counts:number[] = []
+    el.announce = count => {
+        counts.push(count)
+        return `count ${count}`
+    }
+    type(input, 'ali')
+    await waitFor(OPTION)
+
+    t.deepEqual(counts, [ACTORS.length], 'called with the count')
+    t.equal(announced(el), `count ${ACTORS.length}`, 'its text is used')
+})
 
 test('the Suggestion list is open exactly when it has Suggestions',
     async t => {

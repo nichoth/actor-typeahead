@@ -70,12 +70,20 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
     declare host:string|null
     declare rows:string|null
 
+    /**
+     * Returns the text announced when a Typeahead request settles with
+     * `count` Suggestions. Replace it to translate; it handles plurals
+     * itself. Read at announce time, so it can be set after connect.
+     */
+    announce:(count:number) => string = announce
+
     #id = `actor-typeahead-${++instances}`
     #actors:Actor[] = []
     #index = -1
     #pressed = false
     #suggestionList:HTMLUListElement|null = null
     #suggestionCount:HTMLDivElement|null = null
+    #nbsp = false
     #timer:ReturnType<typeof setTimeout>|undefined
     #controller:AbortController|null = null
 
@@ -216,6 +224,18 @@ export class ActorTypeahead extends WebComponent.create('actor-typeahead') {
         this.#actors = parseActors(json)
         this.#index = -1
         this.render()
+        if (this.#actors.length) this.#announce(this.#actors.length)
+    }
+
+    /**
+     * Write the Suggestion count. A trailing no-break space alternates
+     * between writes, so screen readers re-read an identical count.
+     */
+    #announce (count:number) {
+        if (!this.#suggestionCount) return
+        this.#nbsp = !this.#nbsp
+        this.#suggestionCount.textContent = this.announce(count) +
+            (this.#nbsp ? '\u00a0' : '')
     }
 
     #onfocusout () {
@@ -391,6 +411,15 @@ function suggestion (
     li.append(avatar, handle)
 
     return li
+}
+
+/**
+ * The default English Suggestion count announcement.
+ */
+function announce (count:number):string {
+    return count === 1 ?
+        '1 Suggestion available' :
+        `${count} Suggestions available`
 }
 
 function parseActors (json:unknown):Actor[] {
