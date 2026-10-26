@@ -52,16 +52,16 @@ committed)
 No automated tests: per the project rules, no test checks CSS. Verify
 by hand on the example page.
 
-- [ ] With one Suggestion hovered and a different one Highlighted, only
+- [x] With one Suggestion hovered and a different one Highlighted, only
   the Highlighted Suggestion shows the outline
-- [ ] The Highlighted Suggestion's outline is at least 3:1 against the
+- [x] The Highlighted Suggestion's outline is at least 3:1 against the
   default Suggestion list background
-- [ ] With forced-colors emulation in Chrome DevTools, the Highlighted
+- [x] With forced-colors emulation in Chrome DevTools, the Highlighted
   Suggestion shows in the system highlight colours
-- [ ] With forced-colors emulation, the Suggestion list border is still
+- [x] With forced-colors emulation, the Suggestion list border is still
   visible (or, if it is not, a fix is added and noted)
-- [ ] The default `--color-border` is at least 3:1 against white, and
+- [x] The default `--color-border` is at least 3:1 against white, and
   the README CSS variables block shows the same value
-- [ ] The commit body notes the new default border colour
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test`,
+- [x] The commit body notes the new default border colour
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test`,
   `npm run build` and `npm run build-manifest` pass

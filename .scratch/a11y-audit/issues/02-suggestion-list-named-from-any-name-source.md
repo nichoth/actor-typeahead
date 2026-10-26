@@ -35,7 +35,7 @@ its wording names the label source)
 
 **Status:** ready-for-agent
 
-- [ ] When the input has `aria-labelledby`, the list's
+- [x] When the input has `aria-labelledby`, the list's
   `aria-labelledby` equals it and the list has no `aria-label`
 - [ ] When the input has `aria-label` (and no `aria-labelledby`), the
   list's `aria-label` equals it and the list has no `aria-labelledby`
@@ -46,7 +46,7 @@ its wording names the label source)
   `aria-labelledby` referencing them (existing test keeps passing)
 - [ ] With no name source, the list has neither `aria-label` nor
   `aria-labelledby`
-- [ ] No test or code path adds an `id` or other attribute to a page
+- [x] No test or code path adds an `id` or other attribute to a page
   `<label>`
-- [ ] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
+- [x] `npm run lint`, `npx stylelint src/*.css`, `npm test` and
   `npm run build` pass
